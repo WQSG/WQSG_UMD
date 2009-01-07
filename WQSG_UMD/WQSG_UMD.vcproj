@@ -211,10 +211,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\UMD_App.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\WQSG_UMD_APP.cpp"
 				>
 			</File>
@@ -242,10 +238,6 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
-				>
-			</File>
-			<File
-				RelativePath=".\UMD_App.h"
 				>
 			</File>
 			<File

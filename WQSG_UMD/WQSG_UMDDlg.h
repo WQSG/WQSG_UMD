@@ -20,12 +20,11 @@
 
 #pragma once
 #include "afxcmn.h"
-
 // CWQSG_UMDDlg 对话框
 class CWQSG_UMDDlg : public CDialog
 {
 // 构造
-	CUMD_App m_umd;
+	CISO_App m_umd;
 	CMenu m_menu;
 	s32 m_oldOffset;
 public:

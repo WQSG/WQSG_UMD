@@ -167,7 +167,7 @@ void CWQSG_UMDDlg::OnOK(){}
 bool CWQSG_UMDDlg::OpenISO( CStringW ISO_PathName , const BOOL bCanWrite )
 {
 	CloseISO();
-	if( !m_umd.OpenISO( ISO_PathName , bCanWrite ) )
+	if( !m_umd.OpenISO( ISO_PathName , bCanWrite , E_WIT_UMD ) )
 	{
 		MessageBox( m_umd.GetErrStr() );
 		return false;
@@ -190,11 +190,11 @@ void CWQSG_UMDDlg::UpDataGUI()
 {
 	m_cFileList.DeleteAllItems();
 #if 1
-	SUmdFileFind* handle;
-	if( m_umd.IsOpen() && (handle = m_umd.FindUmdFile( m_path )) )
+	SIsoFileFind* handle;
+	if( m_umd.IsOpen() && (handle = m_umd.FindIsoFile( m_path )) )
 	{
-		SUmdFileData data;
-		while( m_umd.FindNextUmdFile( handle , data ) )
+		SIsoFileData data;
+		while( m_umd.FindNextIsoFile( handle , data ) )
 		{
 			CString str;
 			str = data.name;
@@ -219,7 +219,7 @@ void CWQSG_UMDDlg::UpDataGUI()
 				}
 			}
 		}
-		m_umd.CloseFindUmdFile( handle );
+		m_umd.CloseFindIsoFile( handle );
 
 		m_pathW = m_path;
 		UpdateData( FALSE );
@@ -406,14 +406,14 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 		CString name( m_cFileList.GetItemText( index , 0 ) );
 		CStringA nameA;	nameA = name;
 
-		SUmdFileData data;
-		if( !m_umd.GetFileData( m_path , nameA , data ) )
+		SIsoFileData data;
+		if( !m_umd.GetFileData( data , m_path , nameA ) )
 		{
 			MessageBox( m_umd.GetErrStr() );
 			return ;
 		}
 
-		static ::CFileDialog dlg( TRUE );
+		static CFileDialog dlg( TRUE );
 		dlg.m_ofn.lpstrFilter = L"*.*\0*.*\0\0";
 		dlg.m_ofn.lpstrTitle = L"选择要导入的文件...";
 		if( IDOK != dlg.DoModal() )
