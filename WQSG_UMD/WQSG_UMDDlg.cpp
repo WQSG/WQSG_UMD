@@ -229,8 +229,10 @@ void CWQSG_UMDDlg::UpDataGUI()
 
 void CWQSG_UMDDlg::OnBnClickedButton1()
 {
-	static ::CFileDialog dlg( TRUE );
+	static CString strPath;
+	::CFileDialog dlg( TRUE );
 	dlg.m_ofn.lpstrFilter = L"*.ISO\0*.iso\0\0";
+	dlg.m_ofn.lpstrInitialDir = strPath;
 
 	CString name;
 #if _DEBUG && 0
@@ -239,6 +241,8 @@ void CWQSG_UMDDlg::OnBnClickedButton1()
 #else
 	if( IDOK != dlg.DoModal() )
 		return;
+
+	strPath = dlg.GetFolderPath();
 
 	name = dlg.GetPathName();
 	OpenISO( name , TRUE );
@@ -384,11 +388,15 @@ void CWQSG_UMDDlg::On32774_替换文件()
 		CString str ( m_cFileList.GetItemText( index , 0 ) );
 		CStringA strA; strA = str;
 
-		static ::CFileDialog dlg( TRUE );
+		static CString strPath;
+		::CFileDialog dlg( TRUE );
 		dlg.m_ofn.lpstrFilter = L"*.*\0*.*\0\0";
 		dlg.m_ofn.lpstrTitle = L"选择替换用的文件...";
+		dlg.m_ofn.lpstrInitialDir = strPath;
 		if( IDOK != dlg.DoModal() )
 			return;
+
+		strPath = dlg.GetFolderPath();
 
 		if( !m_umd.替换文件( m_path , strA , dlg.GetPathName() ) )
 			MessageBox( m_umd.GetErrStr() );
@@ -413,11 +421,16 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 			return ;
 		}
 
-		static CFileDialog dlg( TRUE );
+		static CString strPath;
+		CFileDialog dlg( TRUE );
 		dlg.m_ofn.lpstrFilter = L"*.*\0*.*\0\0";
 		dlg.m_ofn.lpstrTitle = L"选择要导入的文件...";
+		dlg.m_ofn.lpstrInitialDir = strPath;
+
 		if( IDOK != dlg.DoModal() )
 			return;
+
+		strPath = dlg.GetFolderPath();
 
 		CInputBox ibox( m_oldOffset , data.size );
 		if( IDOK != ibox.DoModal() )
