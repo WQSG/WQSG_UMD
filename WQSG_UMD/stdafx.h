@@ -73,3 +73,54 @@
 
 #include<WQSG_lib.h>
 #include<ISO/ISO_App.h>
+
+class CWQSGFileDialog : public CFileDialog
+{
+	CString m_strFolderPath;
+public:
+	explicit CWQSGFileDialog(BOOL bOpenFileDialog, // TRUE for FileOpen, FALSE for FileSaveAs
+		LPCTSTR lpszDefExt = NULL,
+		LPCTSTR lpszFileName = NULL,
+		DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+		LPCTSTR lpszFilter = NULL,
+		CWnd* pParentWnd = NULL,
+		DWORD dwSize = 0,
+		BOOL bVistaStyle = TRUE)
+		: CFileDialog( bOpenFileDialog,lpszDefExt,lpszFileName,dwFlags,lpszFilter,pParentWnd,dwSize,bVistaStyle)
+	{
+
+	}
+
+	virtual ~CWQSGFileDialog(){}
+
+	CString GetFolderPath() const
+	{
+		CString strResult;
+		if (m_bVistaStyle == TRUE)
+			strResult = CFileDialog::GetFolderPath();
+		else
+		{
+			strResult = m_strFolderPath;
+		}
+		return strResult;
+	}
+
+	virtual BOOL OnFileNameOK()
+	{
+		if (!m_bVistaStyle)
+		{
+			CString strResult;
+			ASSERT(::IsWindow(m_hWnd));
+			ASSERT(m_ofn.Flags & OFN_EXPLORER);
+
+			if (GetParent()->SendMessage(CDM_GETFOLDERPATH, (WPARAM)MAX_PATH, (LPARAM)strResult.GetBuffer(MAX_PATH)) < 0)
+				strResult.Empty();
+			else
+				strResult.ReleaseBuffer();
+
+			m_strFolderPath = strResult;
+		}
+
+		return CFileDialog::OnFileNameOK();
+	}
+};

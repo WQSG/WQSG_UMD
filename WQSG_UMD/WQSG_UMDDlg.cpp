@@ -241,7 +241,7 @@ void CWQSG_UMDDlg::UpDataGUI()
 void CWQSG_UMDDlg::OnBnClickedButton1()
 {
 	static CString strPath;
-	::CFileDialog dlg( TRUE );
+	::CWQSGFileDialog dlg( TRUE );
 	dlg.m_ofn.lpstrFilter = L"*.ISO\0*.iso\0\0";
 	dlg.m_ofn.lpstrInitialDir = strPath;
 
@@ -400,7 +400,7 @@ void CWQSG_UMDDlg::On32774_替换文件()
 		CStringA strA; strA = str;
 
 		static CString strPath;
-		::CFileDialog dlg( TRUE );
+		::CWQSGFileDialog dlg( TRUE );
 		dlg.m_ofn.lpstrFilter = L"*.*\0*.*\0\0";
 		dlg.m_ofn.lpstrTitle = L"选择替换用的文件...";
 		dlg.m_ofn.lpstrInitialDir = strPath;
@@ -433,7 +433,7 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 		}
 
 		static CString strPath;
-		CFileDialog dlg( TRUE );
+		CWQSGFileDialog dlg( TRUE );
 		dlg.m_ofn.lpstrFilter = L"*.*\0*.*\0\0";
 		dlg.m_ofn.lpstrTitle = L"选择要导入的文件...";
 		dlg.m_ofn.lpstrInitialDir = strPath;

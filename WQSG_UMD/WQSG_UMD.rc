@@ -191,7 +191,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_APP_NAME            "WQSG_UMD"
-    IDS_APP_VER             "2009.05.19.0"
+    IDS_APP_VER             "2009.05.19.1"
     IDS_APP_AUTHOR          "WQSG"
     IDS_APP_AUTHOR2         "∂Ò√ŒµƒÀ¿…Ò"
 END
