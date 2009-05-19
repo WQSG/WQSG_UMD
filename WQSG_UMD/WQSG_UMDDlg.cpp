@@ -22,6 +22,9 @@
 #include "WQSG_UMD_APP.h"
 #include "WQSG_UMDDlg.h"
 
+
+#include "About.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -61,6 +64,7 @@ BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_COMMAND(ID_32771_SAVEFILE, &CWQSG_UMDDlg::OnSavefile)
 	ON_COMMAND(ID_32774, &CWQSG_UMDDlg::On32774_替换文件)
 	ON_COMMAND(ID_32776, &CWQSG_UMDDlg::On32776_写文件偏移)
+	ON_BN_CLICKED(IDC_BUTTON2, &CWQSG_UMDDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()// CWQSG_UMDDlg 消息处理程序
 BOOL CWQSG_UMDDlg::OnInitDialog()
 {
@@ -73,6 +77,13 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+	{
+		CString str1,str2,str3;
+		str1.LoadString( IDS_APP_NAME );
+		str2.LoadString( IDS_APP_VER );
+
+		SetWindowText( str1 + L" v" + str2 );
+	}
 	m_cFileList.EnableWindow( FALSE );
 	m_cFileList.SetExtendedStyle( m_cFileList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
 
@@ -441,4 +452,11 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 		if( !m_umd.写文件偏移( m_path , nameA , m_oldOffset , dlg.GetPathName() ) )
 			MessageBox( m_umd.GetErrStr() );
 	}
+}
+
+void CWQSG_UMDDlg::OnBnClickedButton2()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CAbout dlg;
+	dlg.DoModal();
 }

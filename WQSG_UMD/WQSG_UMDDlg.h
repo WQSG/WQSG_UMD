@@ -20,6 +20,7 @@
 
 #pragma once
 #include "afxcmn.h"
+
 // CWQSG_UMDDlg 对话框
 class CWQSG_UMDDlg : public CDialog
 {
@@ -72,4 +73,6 @@ public:
 	afx_msg void On32776_写文件偏移();
 private:
 	CString m_pathW;
+public:
+	afx_msg void OnBnClickedButton2();
 };
