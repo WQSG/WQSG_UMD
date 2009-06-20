@@ -75,4 +75,6 @@ private:
 	CString m_pathW;
 public:
 	afx_msg void OnBnClickedButton2();
+private:
+	CString m_strInfo;
 };

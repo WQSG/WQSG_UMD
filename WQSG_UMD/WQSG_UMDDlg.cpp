@@ -42,6 +42,7 @@ CWQSG_UMDDlg::CWQSG_UMDDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CWQSG_UMDDlg::IDD, pParent)
 	, m_oldOffset(0)
 	, m_pathW(_T(""))
+	, m_strInfo(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -51,6 +52,7 @@ void CWQSG_UMDDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST_FILE, m_cFileList);
 	DDX_Text(pDX, IDC_EDIT1, m_pathW);
+	DDX_Text(pDX, IDC_EDIT2, m_strInfo);
 }
 
 BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
@@ -204,6 +206,8 @@ void CWQSG_UMDDlg::UpDataGUI()
 	SIsoFileFind* handle;
 	if( m_umd.IsOpen() && (handle = m_umd.FindIsoFile( m_path )) )
 	{
+		u32 uFile = 0;
+		u32 uDir = 0;
 		SIsoFileData data;
 		while( m_umd.FindNextIsoFile( handle , data ) )
 		{
@@ -214,10 +218,14 @@ void CWQSG_UMDDlg::UpDataGUI()
 			{
 				if( data.isDir )
 				{
+					uDir++;
+
 					m_cFileList.SetItemData( index , 0 );
 				}
 				else
 				{
+					uFile++;
+
 					CString tmp;
 
 					tmp.Format( L"%d" , data.lba );
@@ -231,6 +239,8 @@ void CWQSG_UMDDlg::UpDataGUI()
 			}
 		}
 		m_umd.CloseFindIsoFile( handle );
+
+		m_strInfo.Format( L"文件夹 %d , 文件 %d" , uDir , uFile );
 
 		m_pathW = m_path;
 		UpdateData( FALSE );
