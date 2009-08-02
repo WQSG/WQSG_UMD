@@ -28,7 +28,8 @@ class CInputBox : public CDialog
 	DECLARE_DYNAMIC(CInputBox)
 
 public:
-	CInputBox( u32 old , u32 max , CWnd* pParent = NULL);   // 标准构造函数
+	CInputBox( CString a_strTitle , CString a_strDec ,
+		u32 old , u32 max , CWnd* pParent = NULL);   // 标准构造函数
 	virtual ~CInputBox();
 
 // 对话框数据
@@ -41,6 +42,9 @@ protected:
 private:
 	CString m_十进制;
 	CString m_十六进制;
+
+	CString m_strTitle ;
+	CString m_strDec;
 public:
 	afx_msg void OnEnChangeEdit1();
 	afx_msg void OnEnChangeEdit2();

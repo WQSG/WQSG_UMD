@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_COMMAND(ID_32774, &CWQSG_UMDDlg::On32774_替换文件)
 	ON_COMMAND(ID_32776, &CWQSG_UMDDlg::On32776_写文件偏移)
 	ON_BN_CLICKED(IDC_BUTTON2, &CWQSG_UMDDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CWQSG_UMDDlg::OnBnClickedButton3)
 END_MESSAGE_MAP()// CWQSG_UMDDlg 消息处理程序
 BOOL CWQSG_UMDDlg::OnInitDialog()
 {
@@ -186,7 +187,7 @@ bool CWQSG_UMDDlg::OpenISO( CStringW ISO_PathName , const BOOL bCanWrite )
 		return false;
 	}
 	m_path = L"";
-	UpDataGUI();
+	UpDataLbaData();
 	m_cFileList.EnableWindow( TRUE );
 	return true;
 }
@@ -199,9 +200,16 @@ void CWQSG_UMDDlg::CloseISO()
 	UpDataGUI();
 }
 
+void CWQSG_UMDDlg::UpDataLbaData()
+{
+	m_umd.GetFreeInfo( &m_uMaxFreeBlock , &m_uFreeLbaCount , &m_uFreeBlockCount );
+	UpDataGUI();
+}
+
 void CWQSG_UMDDlg::UpDataGUI()
 {
 	m_cFileList.DeleteAllItems();
+	m_strInfo = L"";
 #if 1
 	SIsoFileFind* handle;
 	if( m_umd.IsOpen() && (handle = m_umd.FindIsoFile( m_path )) )
@@ -242,9 +250,11 @@ void CWQSG_UMDDlg::UpDataGUI()
 
 		m_strInfo.Format( L"文件夹 %d , 文件 %d" , uDir , uFile );
 
+		m_strInfo.AppendFormat( L"\r\nLBA总数: %d , 空闲LBA总数: %d \r\n空闲的LBA block数为: %d , 最大的空闲LBA block为: %d" , m_umd.GetMaxLbaCount() , m_uFreeLbaCount , m_uFreeBlockCount , m_uMaxFreeBlock );
+
 		m_pathW = m_path;
-		UpdateData( FALSE );
 	}
+	UpdateData( FALSE );
 #endif
 }
 
@@ -332,7 +342,7 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 					break;
 				}
 			}
-			UpDataGUI();
+			UpDataLbaData();
 		}
 		DragFinish( hDrop );
 	}
@@ -391,12 +401,31 @@ void CWQSG_UMDDlg::OnSavefile()
 		CString str( m_cFileList.GetItemText( index , 0 ) );
 		CStringA strA;	strA = str;
 
-		if( !m_umd.导出文件( m_LastSelDir + str , m_path , strA ) )
+		SIsoFileData data;
+		if( !m_umd.GetFileData( data , m_path , strA ) )
 		{
 			MessageBox( m_umd.GetErrStr() );
 			break;
 		}
+
+		if( data.isDir )
+		{
+			if( !m_umd.导出文件夹( m_LastSelDir + str , m_path + strA ) )
+			{
+				MessageBox( m_umd.GetErrStr() );
+				break;
+			}
+		}
+		else
+		{
+			if( !m_umd.导出文件( m_LastSelDir + str , m_path , strA ) )
+			{
+				MessageBox( m_umd.GetErrStr() );
+				break;
+			}
+		}
 	}
+	UpDataLbaData();
 }
 
 void CWQSG_UMDDlg::On32774_替换文件()
@@ -421,6 +450,8 @@ void CWQSG_UMDDlg::On32774_替换文件()
 
 		if( !m_umd.替换文件( m_path , strA , dlg.GetPathName() ) )
 			MessageBox( m_umd.GetErrStr() );
+
+		UpDataLbaData();
 	}
 }
 
@@ -453,7 +484,7 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 
 		strPath = dlg.GetFolderPath();
 
-		CInputBox ibox( m_oldOffset , data.size );
+		CInputBox ibox( L"相对于文件的偏移" , L"输入相对于文件的偏移" , m_oldOffset , data.size );
 		if( IDOK != ibox.DoModal() )
 			return ;
 
@@ -461,6 +492,8 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 
 		if( !m_umd.写文件偏移( m_path , nameA , m_oldOffset , dlg.GetPathName() ) )
 			MessageBox( m_umd.GetErrStr() );
+
+		UpDataLbaData();
 	}
 }
 
@@ -469,4 +502,33 @@ void CWQSG_UMDDlg::OnBnClickedButton2()
 	// TODO: 在此添加控件通知处理程序代码
 	CAbout dlg;
 	dlg.DoModal();
+}
+
+void CWQSG_UMDDlg::OnBnClickedButton3()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if( !m_umd.IsOpen() )
+		return;
+
+	CString str;
+	str.Format( L"输入要扩容LBA数\r\n每个LBA的大小为%d字节" , m_umd.GetPerLbaSize() );
+
+	CInputBox ibox( L"扩容ISO" , str , 0 , (n32)(((u32)-1)>>1) - m_umd.GetMaxLbaCount() );
+	if( IDOK != ibox.DoModal() )
+		return ;
+
+	n32 lba = ibox.GetVal();
+
+	if( lba > 0 )
+	{
+		if( m_umd.AddLbaCount( lba ) )
+		{
+			MessageBox( L"扩容成功" );
+		}
+		else
+		{
+			MessageBox( L"扩容失败" );
+		}
+		UpDataLbaData();
+	}
 }

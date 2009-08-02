@@ -27,12 +27,14 @@
 
 IMPLEMENT_DYNAMIC(CInputBox, CDialog)
 
-CInputBox::CInputBox( u32 old , u32 max , CWnd* pParent /*=NULL*/)
+CInputBox::CInputBox(  CString a_strTitle , CString a_strDec , u32 old , u32 max , CWnd* pParent /*=NULL*/)
 	: CDialog(CInputBox::IDD, pParent)
 	, m_十进制(_T("0"))
 	, m_十六进制(_T("0"))
 	, m_val(old)
 	, m_maxval( max )
+	, m_strTitle(a_strTitle)
+	, m_strDec(a_strDec)
 {
 
 }
@@ -50,6 +52,7 @@ void CInputBox::DoDataExchange(CDataExchange* pDX)
 	DDV_MaxChars(pDX, m_十六进制, 8);
 	DDX_Control(pDX, IDC_EDIT1, m_c10);
 	DDX_Control(pDX, IDC_EDIT2, m_c16);
+	DDX_Text(pDX, IDC_DEC, m_strDec);
 }
 
 
@@ -140,6 +143,8 @@ BOOL CInputBox::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// TODO:  在此添加额外的初始化
+	SetWindowText( m_strTitle );
+
 	if( m_maxval < 0 )
 		m_maxval = 0;
 

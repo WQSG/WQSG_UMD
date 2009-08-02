@@ -59,6 +59,11 @@ private:
 	bool OpenISO( CStringW ISO_PathName , const BOOL bCanWrite );
 	void CloseISO();
 	void UpDataGUI();
+
+	u32 m_uMaxFreeBlock ;
+	u32 m_uFreeLbaCount ;
+	u32 m_uFreeBlockCount;
+	void UpDataLbaData();
 public:
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult);
@@ -77,4 +82,6 @@ public:
 	afx_msg void OnBnClickedButton2();
 private:
 	CString m_strInfo;
+public:
+	afx_msg void OnBnClickedButton3();
 };

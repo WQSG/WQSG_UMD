@@ -24,6 +24,8 @@
 #define IDC_APP_VER                     1008
 #define IDC_AUTHOR                      1009
 #define IDC_SYSLINK3                    1010
+#define IDC_BUTTON3                     1010
+#define IDC_DEC                         1011
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -37,9 +39,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        134
+#define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1010
+#define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
