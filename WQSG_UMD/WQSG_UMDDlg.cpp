@@ -68,6 +68,7 @@ BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_COMMAND(ID_32776, &CWQSG_UMDDlg::On32776_写文件偏移)
 	ON_BN_CLICKED(IDC_BUTTON2, &CWQSG_UMDDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON3, &CWQSG_UMDDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON4, &CWQSG_UMDDlg::OnBnClickedButton4)
 END_MESSAGE_MAP()// CWQSG_UMDDlg 消息处理程序
 BOOL CWQSG_UMDDlg::OnInitDialog()
 {
@@ -531,4 +532,29 @@ void CWQSG_UMDDlg::OnBnClickedButton3()
 		}
 		UpDataLbaData();
 	}
+}
+
+void CWQSG_UMDDlg::OnBnClickedButton4()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData();
+
+	static CString strPath;
+
+	CWQSGFileDialog dlg( TRUE );
+	dlg.m_ofn.lpstrFilter = L"*.wifp\0*.wifp\0\0";
+	dlg.m_ofn.lpstrInitialDir = strPath;
+
+	if( dlg.DoModal() != IDOK )
+		return;
+
+	strPath = dlg.GetFolderPath();
+
+	CWQSG_File fp;
+	if( !fp.OpenFile( dlg.GetPathName().GetString() , 1 , 3 ) )
+	{
+		return;
+	}
+
+	m_umd.导入文件包( fp );
 }
