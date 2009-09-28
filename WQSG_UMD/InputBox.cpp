@@ -74,7 +74,7 @@ void CInputBox::OnEnChangeEdit1()
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData();
 
-	s64 val = _ttoi64( m_十进制.GetBuffer() );
+	s64 val = _ttoi64( m_十进制.GetString() );
 
 	bool 改变 = true;
 	if( val < 0 )
@@ -118,7 +118,7 @@ void CInputBox::OnEnChangeEdit2()
 	}
 
 	s64 val = 0;
-	swscanf( m_十六进制.GetBuffer() , L"%X" , &val );
+	swscanf( m_十六进制.GetString() , L"%X" , &val );
 
 	bool 改变 = true;
 	if( val < 0 )

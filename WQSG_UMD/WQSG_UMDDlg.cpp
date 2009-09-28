@@ -306,7 +306,7 @@ void CWQSG_UMDDlg::OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult)
 		return ;
 	}
 	_tISO_DirEnt tmp;
-	if( m_umd.FindFile( tP_DirEnt , strNameA.GetBuffer() , tmp ) < 0 )
+	if( m_umd.FindFile( tP_DirEnt , strNameA.GetString() , tmp ) < 0 )
 	{
 		MessageBox( L"目录表出错?" );
 		CloseISO();
@@ -387,7 +387,7 @@ void CWQSG_UMDDlg::OnNMRClickListFile(NMHDR *pNMHDR, LRESULT *pResult)
 void CWQSG_UMDDlg::OnSavefile()
 {
 	// TODO: 在此添加命令处理程序代码
-	CWQSG_DirDlg dlg( m_hWnd , L"输出路径..." , m_LastSelDir.GetBuffer() );
+	CWQSG_DirDlg dlg( m_hWnd , L"输出路径..." , m_LastSelDir.GetString() );
 	WCHAR outPath[MAX_PATH*2];
 	if( !dlg.GetPath( outPath ) )
 		return ;
@@ -540,6 +540,12 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData();
 
+	if( !m_umd.IsOpen() )
+		return;
+
+	if( !m_umd.IsCanWrite() )
+		return;
+
 	static CString strPath;
 
 	CWQSGFileDialog dlg( TRUE );
@@ -564,6 +570,9 @@ void CWQSG_UMDDlg::OnBnClickedButton5()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData();
+
+	if( !m_umd.IsOpen() )
+		return;
 
 	static CString strPath_iso;
 	static CString strPath_out;

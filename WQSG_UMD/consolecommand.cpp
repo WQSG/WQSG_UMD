@@ -207,7 +207,7 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 			parseOK = false;
 			dprint(_T("Open iso file %s error.\n"), iso);
 		}
-		else if (!m_umd.导入文件(file, importDir.IsEmpty() ? "" : CW2A(importDir.GetBuffer()), 0))
+		else if (!m_umd.导入文件(file, importDir.IsEmpty() ? "" : CW2A(importDir.GetString()), 0))
 		{
 			parseOK = false;
 			dprint(_T("Import error: %s\n"), m_umd.GetErrStr());
