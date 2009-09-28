@@ -124,27 +124,3 @@ public:
 		return CFileDialog::OnFileNameOK();
 	}
 };
-
-#define DEF_WQSG_IsoPatch_Head_Magic "WQSG-IsoFilePack"
-
-#pragma pack(push,1)
-struct SWQSG_IsoPatch_Head
-{
-	u8 m_Magic[16];//DEF_WQSG_IsoPatch_Head_Magic "WQSG-IsoFilePack"
-	u8 m_Ver[4];
-	n32 m_nFileCount;
-	n64 m_nSize;
-};
-
-struct SWQSG_IsoPatch_Block
-{
-	u16 m_uSize;
-	u32 m_uCrc32;
-	char m_PathName[256];
-	char m_FileName[256];
-	u32 m_uFileSize;
-	u32 m_uOldFileCrc32;
-	SIsoTime m_time;
-};
-
-#pragma pack(pop)

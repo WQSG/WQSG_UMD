@@ -69,6 +69,7 @@ BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON2, &CWQSG_UMDDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON3, &CWQSG_UMDDlg::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON4, &CWQSG_UMDDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON5, &CWQSG_UMDDlg::OnBnClickedButton5)
 END_MESSAGE_MAP()// CWQSG_UMDDlg 消息处理程序
 BOOL CWQSG_UMDDlg::OnInitDialog()
 {
@@ -556,5 +557,71 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 		return;
 	}
 
-	m_umd.导入文件包( fp );
+	m_umd.导入文件包( fp , TRUE );
+}
+
+void CWQSG_UMDDlg::OnBnClickedButton5()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData();
+
+	static CString strPath_iso;
+	static CString strPath_out;
+
+	CWQSGFileDialog dlg_iso( TRUE );
+	dlg_iso.m_ofn.lpstrFilter = L"*.iso\0*.iso\0\0";
+	dlg_iso.m_ofn.lpstrTitle = L"选择原版ISO...";
+	dlg_iso.m_ofn.lpstrInitialDir = strPath_iso;
+
+	if( dlg_iso.DoModal() != IDOK )
+		return;
+
+	strPath_iso = dlg_iso.GetFolderPath();
+
+	CWQSGFileDialog dlg_out( TRUE );
+	dlg_out.m_ofn.lpstrFilter = L"*.wifp\0*.wifp\0\0";
+	dlg_out.m_ofn.lpstrTitle = L"选择原版ISO...";
+	dlg_out.m_ofn.lpstrInitialDir = strPath_out;
+
+	if( dlg_out.DoModal() != IDOK )
+		return;
+
+	strPath_out = dlg_out.GetFolderPath();
+
+	BOOL bCheckCrc32;
+	switch( MessageBox( L"制作补丁时，是否要检验原版文件的CRC32" , NULL ,MB_YESNOCANCEL ) )
+	{
+	case IDYES:
+		bCheckCrc32 = TRUE;
+		break;
+	case IDNO:
+		bCheckCrc32 = FALSE;
+		break;
+	default:
+		return;
+	}
+
+	CISO_App oldIso;
+	if( !oldIso.OpenISO( dlg_iso.GetPathName() , FALSE , E_WIT_UMD ) )
+	{
+		MessageBox( L"打开ISO失败" , dlg_iso.GetPathName() );
+		return;
+	}
+
+	CWQSG_File fp;
+	if( fp.OpenFile( dlg_out.GetPathName() , 4 , 3 ) )
+	{
+		MessageBox( L"打开文件失败" , dlg_out.GetPathName() );
+		return;
+	}
+
+	if( !m_umd.生成文件包( oldIso , fp , bCheckCrc32 ) )
+	{
+		CString str;
+		str.Format( L"创建补丁失 :\r\n%s" , m_umd.GetErrStr() );
+		MessageBox( str , dlg_out.GetPathName() );
+		return;
+	}
+
+	MessageBox( L"成功创建补丁" , dlg_out.GetPathName() );
 }
