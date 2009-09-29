@@ -86,4 +86,8 @@ public:
 	afx_msg void OnBnClickedButton3();
 	afx_msg void OnBnClickedButton4();
 	afx_msg void OnBnClickedButton5();
+	void UiClose(void);
+	void UiOpenR(void);
+	void UiOpenRW(void);
+	void SetTitle(BOOL* a_bCanWrite);
 };

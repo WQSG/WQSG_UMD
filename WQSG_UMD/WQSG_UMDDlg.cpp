@@ -82,14 +82,7 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
-	{
-		CString str1,str2,str3;
-		str1.LoadString( IDS_APP_NAME );
-		str2.LoadString( IDS_APP_VER );
-
-		SetWindowText( str1 + L" v" + str2 );
-	}
-	m_cFileList.EnableWindow( FALSE );
+	UiClose();
 	m_cFileList.SetExtendedStyle( m_cFileList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
 
 	const int count = sizeof(WQSG_FileList)/sizeof(*WQSG_FileList);
@@ -190,13 +183,13 @@ bool CWQSG_UMDDlg::OpenISO( CStringW ISO_PathName , const BOOL bCanWrite )
 	}
 	m_path = L"";
 	UpDataLbaData();
-	m_cFileList.EnableWindow( TRUE );
+	m_umd.IsCanWrite()?UiOpenRW():UiOpenR();
 	return true;
 }
 
 void CWQSG_UMDDlg::CloseISO()
 {
-	m_cFileList.EnableWindow( FALSE );
+	UiClose();
 	m_umd.CloseISO( );
 	m_path = "";
 	UpDataGUI();
@@ -563,7 +556,19 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 		return;
 	}
 
-	m_umd.导入文件包( fp , TRUE );
+	n32 rt = m_umd.导入文件包( fp , TRUE );
+	if( rt == 0 )
+	{
+		MessageBox( L"打补丁成功" );
+	}
+	else if( rt > 0 )
+	{
+		MessageBox( L"打补丁失败" );
+	}
+	else
+	{
+		MessageBox( L"打补丁失败,ISO可能已损坏" );
+	}
 }
 
 void CWQSG_UMDDlg::OnBnClickedButton5()
@@ -587,7 +592,7 @@ void CWQSG_UMDDlg::OnBnClickedButton5()
 
 	strPath_iso = dlg_iso.GetFolderPath();
 
-	CWQSGFileDialog dlg_out( TRUE );
+	CWQSGFileDialog dlg_out( FALSE , L"wifp" );
 	dlg_out.m_ofn.lpstrFilter = L"*.wifp\0*.wifp\0\0";
 	dlg_out.m_ofn.lpstrTitle = L"选择原版ISO...";
 	dlg_out.m_ofn.lpstrInitialDir = strPath_out;
@@ -618,7 +623,7 @@ void CWQSG_UMDDlg::OnBnClickedButton5()
 	}
 
 	CWQSG_File fp;
-	if( fp.OpenFile( dlg_out.GetPathName() , 4 , 3 ) )
+	if( !fp.OpenFile( dlg_out.GetPathName() , 4 , 3 ) )
 	{
 		MessageBox( L"打开文件失败" , dlg_out.GetPathName() );
 		return;
@@ -633,4 +638,60 @@ void CWQSG_UMDDlg::OnBnClickedButton5()
 	}
 
 	MessageBox( L"成功创建补丁" , dlg_out.GetPathName() );
+}
+
+#define DEF_EnableWindow( __def_ID , _def_Enable ) do{CWnd*pWnd = GetDlgItem(__def_ID);pWnd->EnableWindow(_def_Enable);}while(0)
+void CWQSG_UMDDlg::UiClose(void)
+{
+	m_cFileList.EnableWindow( FALSE );
+	DEF_EnableWindow(IDC_BUTTON_UP,FALSE);
+	DEF_EnableWindow(IDC_BUTTON3,FALSE);
+	DEF_EnableWindow(IDC_BUTTON4,FALSE);
+	DEF_EnableWindow(IDC_BUTTON5,FALSE);
+
+	SetTitle( NULL );
+}
+
+void CWQSG_UMDDlg::UiOpenR(void)
+{
+	m_cFileList.EnableWindow( TRUE );
+	DEF_EnableWindow(IDC_BUTTON_UP,TRUE);
+	DEF_EnableWindow(IDC_BUTTON3,FALSE);
+	DEF_EnableWindow(IDC_BUTTON4,FALSE);
+	DEF_EnableWindow(IDC_BUTTON5,TRUE);
+	BOOL b = FALSE;
+	SetTitle( &b );
+}
+
+void CWQSG_UMDDlg::UiOpenRW(void)
+{
+	m_cFileList.EnableWindow( TRUE );
+	DEF_EnableWindow(IDC_BUTTON_UP,TRUE);
+	DEF_EnableWindow(IDC_BUTTON3,TRUE);
+	DEF_EnableWindow(IDC_BUTTON4,TRUE);
+	DEF_EnableWindow(IDC_BUTTON5,TRUE);
+	BOOL b = TRUE;
+	SetTitle( &b );
+}
+
+void CWQSG_UMDDlg::SetTitle(BOOL* a_bCanWrite)
+{
+	CString str1,str2,str3;
+	str1.LoadString( IDS_APP_NAME );
+	str2.LoadString( IDS_APP_VER );
+
+	CString strTitle( str1 + L" v" + str2 ); 
+	if( a_bCanWrite )
+	{
+		if( *a_bCanWrite )
+		{
+			strTitle += L" [写模式]";
+		}
+		else	
+		{
+			strTitle += L" [只读模式]";
+		}
+	}
+
+	SetWindowText( strTitle );
 }
