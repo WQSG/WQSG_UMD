@@ -255,24 +255,18 @@ void CWQSG_UMDDlg::UpDataGUI()
 
 void CWQSG_UMDDlg::OnBnClickedButton1()
 {
-	static CString strPath;
-	::CWQSGFileDialog dlg( TRUE );
-	dlg.m_ofn.lpstrFilter = L"*.ISO\0*.iso\0\0";
-	dlg.m_ofn.lpstrInitialDir = strPath;
+	static CWQSGFileDialog_Open dlg( L"*.ISO|*.iso||" );
 
 	CString name;
 #if _DEBUG && 0
 	name = "s:\\Luxor.iso";
-	OpenISO( name , FALSE );
 #else
 	if( IDOK != dlg.DoModal() )
 		return;
 
-	strPath = dlg.GetFolderPath();
-
 	name = dlg.GetPathName();
-	OpenISO( name , TRUE );
 #endif
+	OpenISO( name , TRUE );
 	// TODO: 在此添加控件通知处理程序代码
 }
 
@@ -325,19 +319,22 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 		const HDROP hDrop = (HDROP)pMsg->wParam;
 		if( pMsg->hwnd == m_cFileList.m_hWnd )
 		{
-			WCHAR strPathName[MAX_PATH*2];
-
-			const int fileCount = DragQueryFile( hDrop , (UINT)-1 , NULL , 0 );
-
-			for( int i = 0 ; (i>=0) && (i<fileCount) && ( DragQueryFile( hDrop , i , strPathName , MAX_PATH*2 ) != (UINT)-1 ) ; ++i )
+			if( m_umd.IsCanWrite() )
 			{
-				if( !m_umd.导入文件( strPathName , m_path , 0 ) )
+				WCHAR strPathName[MAX_PATH*2];
+
+				const int fileCount = DragQueryFile( hDrop , (UINT)-1 , NULL , 0 );
+
+				for( int i = 0 ; (i>=0) && (i<fileCount) && ( DragQueryFile( hDrop , i , strPathName , MAX_PATH*2 ) != (UINT)-1 ) ; ++i )
 				{
-					MessageBox( m_umd.GetErrStr() );
-					break;
+					if( !m_umd.导入文件( strPathName , m_path , 0 ) )
+					{
+						MessageBox( m_umd.GetErrStr() );
+						break;
+					}
 				}
+				UpDataLbaData();
 			}
-			UpDataLbaData();
 		}
 		DragFinish( hDrop );
 	}
@@ -426,6 +423,12 @@ void CWQSG_UMDDlg::OnSavefile()
 void CWQSG_UMDDlg::On32774_替换文件()
 {
 	// TODO: 在此添加命令处理程序代码
+	if( m_umd.IsCanWrite() )
+	{
+		MessageBox( L"没有写权限" );
+		return;
+	}
+
 	POSITION pos = m_cFileList.GetFirstSelectedItemPosition();
 	const int index = m_cFileList.GetNextSelectedItem( pos );
 	if( index >= 0 )
@@ -433,15 +436,11 @@ void CWQSG_UMDDlg::On32774_替换文件()
 		CString str ( m_cFileList.GetItemText( index , 0 ) );
 		CStringA strA; strA = str;
 
-		static CString strPath;
-		::CWQSGFileDialog dlg( TRUE );
-		dlg.m_ofn.lpstrFilter = L"*.*\0*.*\0\0";
-		dlg.m_ofn.lpstrTitle = L"选择替换用的文件...";
-		dlg.m_ofn.lpstrInitialDir = strPath;
+		static ::CWQSGFileDialog_Open dlg( L"*.*|*.*||" );
+		dlg.SetWindowTitle( L"选择替换用的文件..." );
+
 		if( IDOK != dlg.DoModal() )
 			return;
-
-		strPath = dlg.GetFolderPath();
 
 		if( !m_umd.替换文件( m_path , strA , dlg.GetPathName() ) )
 			MessageBox( m_umd.GetErrStr() );
@@ -454,6 +453,12 @@ void CWQSG_UMDDlg::On32774_替换文件()
 void CWQSG_UMDDlg::On32776_写文件偏移()
 {
 	// TODO: 在此添加命令处理程序代码
+	if( m_umd.IsCanWrite() )
+	{
+		MessageBox( L"没有写权限" );
+		return;
+	}
+
 	POSITION pos = m_cFileList.GetFirstSelectedItemPosition();
 	const int index = m_cFileList.GetNextSelectedItem( pos );
 	if( index >= 0 )
@@ -468,16 +473,11 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 			return ;
 		}
 
-		static CString strPath;
-		CWQSGFileDialog dlg( TRUE );
-		dlg.m_ofn.lpstrFilter = L"*.*\0*.*\0\0";
-		dlg.m_ofn.lpstrTitle = L"选择要导入的文件...";
-		dlg.m_ofn.lpstrInitialDir = strPath;
+		static CWQSGFileDialog_Open dlg( L"*.*|*.*||" );
+		dlg.SetWindowTitle( L"选择要导入的文件..." );
 
 		if( IDOK != dlg.DoModal() )
 			return;
-
-		strPath = dlg.GetFolderPath();
 
 		CInputBox ibox( L"相对于文件的偏移" , L"输入相对于文件的偏移" , m_oldOffset , data.size );
 		if( IDOK != ibox.DoModal() )
@@ -502,7 +502,7 @@ void CWQSG_UMDDlg::OnBnClickedButton2()
 void CWQSG_UMDDlg::OnBnClickedButton3()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	if( !m_umd.IsOpen() )
+	if( !m_umd.IsCanWrite() )
 		return;
 
 	CString str;
@@ -539,16 +539,9 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 	if( !m_umd.IsCanWrite() )
 		return;
 
-	static CString strPath;
-
-	CWQSGFileDialog dlg( TRUE );
-	dlg.m_ofn.lpstrFilter = L"*.wifp\0*.wifp\0\0";
-	dlg.m_ofn.lpstrInitialDir = strPath;
-
+	static CWQSGFileDialog_Open dlg( L"*.wifp|*.wifp||" );
 	if( dlg.DoModal() != IDOK )
 		return;
-
-	strPath = dlg.GetFolderPath();
 
 	CWQSG_File fp;
 	if( !fp.OpenFile( dlg.GetPathName().GetString() , 1 , 3 ) )
@@ -579,28 +572,17 @@ void CWQSG_UMDDlg::OnBnClickedButton5()
 	if( !m_umd.IsOpen() )
 		return;
 
-	static CString strPath_iso;
-	static CString strPath_out;
-
-	CWQSGFileDialog dlg_iso( TRUE );
-	dlg_iso.m_ofn.lpstrFilter = L"*.iso\0*.iso\0\0";
-	dlg_iso.m_ofn.lpstrTitle = L"选择原版ISO...";
-	dlg_iso.m_ofn.lpstrInitialDir = strPath_iso;
+	static CWQSGFileDialog_Open dlg_iso( L"*.iso|*.iso||" );
+	dlg_iso.SetWindowTitle( L"选择原版ISO..." );
 
 	if( dlg_iso.DoModal() != IDOK )
 		return;
 
-	strPath_iso = dlg_iso.GetFolderPath();
-
-	CWQSGFileDialog dlg_out( FALSE , L"wifp" );
-	dlg_out.m_ofn.lpstrFilter = L"*.wifp\0*.wifp\0\0";
-	dlg_out.m_ofn.lpstrTitle = L"选择原版ISO...";
-	dlg_out.m_ofn.lpstrInitialDir = strPath_out;
+	static CWQSGFileDialog_Save dlg_out( L"*.wifp|*.wifp||" , L"wifp" );
+	dlg_out.SetWindowTitle( L"选择原版ISO..." );
 
 	if( dlg_out.DoModal() != IDOK )
 		return;
-
-	strPath_out = dlg_out.GetFolderPath();
 
 	BOOL bCheckCrc32;
 	switch( MessageBox( L"制作补丁时，是否要检验原版文件的CRC32" , NULL ,MB_YESNOCANCEL ) )

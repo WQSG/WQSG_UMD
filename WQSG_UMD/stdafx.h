@@ -74,53 +74,99 @@
 #include<WQSG_lib.h>
 #include<ISO/ISO_App.h>
 
-class CWQSGFileDialog : public CFileDialog
+class CWQSGFileDialog;
+class CWQSGFileDialog_Save
 {
+protected:
 	CString m_strFolderPath;
+	CString m_strFilter;
+	CString m_strDefExt;
+	CString m_strFileName;
+
+	CString m_strWindowTitle;
+	CWQSGFileDialog* m_pDlg;
 public:
-	explicit CWQSGFileDialog(BOOL bOpenFileDialog, // TRUE for FileOpen, FALSE for FileSaveAs
+	explicit CWQSGFileDialog_Save(LPCTSTR lpszFilter = NULL,
 		LPCTSTR lpszDefExt = NULL,
-		LPCTSTR lpszFileName = NULL,
-		DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-		LPCTSTR lpszFilter = NULL,
-		CWnd* pParentWnd = NULL,
-		DWORD dwSize = 0,
-		BOOL bVistaStyle = TRUE)
-		: CFileDialog( bOpenFileDialog,lpszDefExt,lpszFileName,dwFlags,lpszFilter,pParentWnd,dwSize,bVistaStyle)
+		LPCTSTR lpszFileName = NULL
+		)
+		: m_pDlg( NULL )
+		, m_strFilter(lpszFilter)
+		, m_strDefExt(lpszDefExt)
+		, m_strFileName(lpszFileName)
 	{
-
 	}
 
-	virtual ~CWQSGFileDialog(){}
+	virtual ~CWQSGFileDialog_Save();
 
-	CString GetFolderPath() const
+	virtual INT_PTR DoModal();
+
+	CString GetPathName()const;
+
+	void SetWindowTitle( LPCTSTR lpszTitle )
 	{
-		CString strResult;
-		if (m_bVistaStyle == TRUE)
-			strResult = CFileDialog::GetFolderPath();
-		else
-		{
-			strResult = m_strFolderPath;
-		}
-		return strResult;
+		m_strWindowTitle = lpszTitle;
+	}
+};
+
+class CWQSGFileDialog_Open
+{
+protected:
+	CString m_strFolderPath;
+	CString m_strFilter;
+	CString m_strFileName;
+
+	CString m_strWindowTitle;
+	CWQSGFileDialog* m_pDlg;
+public:
+	explicit CWQSGFileDialog_Open(LPCTSTR lpszFilter = NULL,
+		LPCTSTR lpszFileName = NULL
+		)
+		: m_pDlg( NULL )
+		, m_strFilter(lpszFilter)
+		, m_strFileName(lpszFileName)
+	{
 	}
 
-	virtual BOOL OnFileNameOK()
+	virtual ~CWQSGFileDialog_Open();
+
+	virtual INT_PTR DoModal();
+
+	CString GetPathName()const;
+
+	void SetWindowTitle( LPCTSTR lpszTitle )
 	{
-		if (!m_bVistaStyle)
-		{
-			CString strResult;
-			ASSERT(::IsWindow(m_hWnd));
-			ASSERT(m_ofn.Flags & OFN_EXPLORER);
-
-			if (GetParent()->SendMessage(CDM_GETFOLDERPATH, (WPARAM)MAX_PATH, (LPARAM)strResult.GetBuffer(MAX_PATH)) < 0)
-				strResult.Empty();
-			else
-				strResult.ReleaseBuffer();
-
-			m_strFolderPath = strResult;
-		}
-
-		return CFileDialog::OnFileNameOK();
+		m_strWindowTitle = lpszTitle;
 	}
+};
+
+class CWQSGFileDialog_OpenS
+{
+protected:
+	CString m_strFolderPath;
+	CString m_strFilter;
+
+	CString m_strWindowTitle;
+	CWQSGFileDialog* m_pDlg;
+	CString m_strNameBuffer;
+public:
+	explicit CWQSGFileDialog_OpenS(LPCTSTR lpszFilter = NULL)
+		: m_pDlg( NULL )
+		, m_strFilter(lpszFilter)
+	{
+		m_strNameBuffer.GetBuffer(65536);
+	}
+
+	virtual ~CWQSGFileDialog_OpenS();
+
+	virtual INT_PTR DoModal();
+
+	void SetWindowTitle( LPCTSTR lpszTitle )
+	{
+		m_strWindowTitle = lpszTitle;
+	}
+
+	POSITION GetStartPosition( ) const;
+
+	BOOL GetNextPathName( CString& a_strPathName , POSITION& pos) const;
 };
