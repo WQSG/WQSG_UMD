@@ -229,6 +229,8 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 			errInfo += _T("Missing required argument: --file.\n");
 		}
 		dprint(_T("%s\n"), errInfo.c_str());
+
+		PrintHelp();
 	}
 	CloseConsole();
 	return parseOK;
