@@ -423,7 +423,7 @@ void CWQSG_UMDDlg::OnSavefile()
 void CWQSG_UMDDlg::On32774_替换文件()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_umd.IsCanWrite() )
+	if( !m_umd.IsCanWrite() )
 	{
 		MessageBox( L"没有写权限" );
 		return;
@@ -453,7 +453,7 @@ void CWQSG_UMDDlg::On32774_替换文件()
 void CWQSG_UMDDlg::On32776_写文件偏移()
 {
 	// TODO: 在此添加命令处理程序代码
-	if( m_umd.IsCanWrite() )
+	if( !m_umd.IsCanWrite() )
 	{
 		MessageBox( L"没有写权限" );
 		return;
