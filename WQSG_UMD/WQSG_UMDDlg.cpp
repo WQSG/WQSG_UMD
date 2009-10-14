@@ -614,7 +614,7 @@ void CWQSG_UMDDlg::OnBnClickedButton5()
 	if( !m_umd.生成文件包( oldIso , fp , bCheckCrc32 ) )
 	{
 		CString str;
-		str.Format( L"创建补丁失 :\r\n%s" , m_umd.GetErrStr() );
+		str.Format( L"创建补丁失败\r\n%s" , m_umd.GetErrStr() );
 		MessageBox( str , dlg_out.GetPathName() );
 		return;
 	}
