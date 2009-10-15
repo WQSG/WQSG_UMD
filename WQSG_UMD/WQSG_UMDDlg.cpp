@@ -327,8 +327,11 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 
 				for( int i = 0 ; (i>=0) && (i<fileCount) && ( DragQueryFile( hDrop , i , strPathName , MAX_PATH*2 ) != (UINT)-1 ) ; ++i )
 				{
-					if( !m_umd.导入文件( strPathName , m_path , 0 ) )
+					BOOL bFileBreak;
+					if( !m_umd.导入文件( bFileBreak , strPathName , m_path , 0 ) )
 					{
+						if( bFileBreak )
+							CloseISO();
 						MessageBox( m_umd.GetErrStr() );
 						break;
 					}
@@ -442,8 +445,13 @@ void CWQSG_UMDDlg::On32774_替换文件()
 		if( IDOK != dlg.DoModal() )
 			return;
 
-		if( !m_umd.替换文件( m_path , strA , dlg.GetPathName() ) )
+		BOOL bFileBreak;
+		if( !m_umd.替换文件( bFileBreak , m_path , strA , dlg.GetPathName() ) )
+		{
+			if( bFileBreak )
+				CloseISO();
 			MessageBox( m_umd.GetErrStr() );
+		}
 
 		UpDataLbaData();
 	}
@@ -485,8 +493,14 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 
 		m_oldOffset = ibox.GetVal();
 
-		if( !m_umd.写文件偏移( m_path , nameA , m_oldOffset , dlg.GetPathName() ) )
+		BOOL bFileBreak;
+		if( !m_umd.写文件偏移( bFileBreak , m_path , nameA , m_oldOffset , dlg.GetPathName() ) )
+		{
+			if( bFileBreak )
+				CloseISO();
+
 			MessageBox( m_umd.GetErrStr() );
+		}
 
 		UpDataLbaData();
 	}
@@ -549,17 +563,18 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 		return;
 	}
 
-	n32 rt = m_umd.导入文件包( fp , TRUE );
-	if( rt == 0 )
+	BOOL bFileBreak;
+	if( m_umd.导入文件包( bFileBreak , fp , TRUE ) )
 	{
 		MessageBox( L"打补丁成功" );
 	}
-	else if( rt > 0 )
+	else if( bFileBreak )
 	{
 		MessageBox( L"打补丁失败" );
 	}
 	else
 	{
+		CloseISO();
 		MessageBox( L"打补丁失败,ISO可能已损坏" );
 	}
 }

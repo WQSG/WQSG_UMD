@@ -202,12 +202,13 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 	if (parseOK && !file.IsEmpty() && !iso.IsEmpty())
 	{
 		CISO_App m_umd;
+		BOOL bFileBreak;
 		if( !m_umd.OpenISO(iso , true , E_WIT_UMD ) )
 		{
 			parseOK = false;
 			dprint(_T("Open iso file %s error.\n"), iso);
 		}
-		else if (!m_umd.导入文件(file, importDir.IsEmpty() ? "" : CW2A(importDir.GetString()), 0))
+		else if (!m_umd.导入文件( bFileBreak , file, importDir.IsEmpty() ? "" : CW2A(importDir.GetString()), 0))
 		{
 			parseOK = false;
 			dprint(_T("Import error: %s\n"), m_umd.GetErrStr());
