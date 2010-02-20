@@ -7,7 +7,6 @@
 #define IDI_ICON1                       130
 #define IDR_MAINFRAME                   130
 #define IDD_DIALOG1                     131
-#define IDD_ABOUT                       132
 #define IDS_APP_NAME                    133
 #define IDS_APP_VER                     134
 #define IDS_APP_AUTHOR                  135
@@ -17,13 +16,7 @@
 #define IDC_BUTTON_UP                   1002
 #define IDC_EDIT1                       1003
 #define IDC_EDIT2                       1004
-#define IDC_SYSLINK1                    1005
 #define IDC_BUTTON2                     1006
-#define IDC_SYSLINK2                    1006
-#define IDC_APP_NAME                    1007
-#define IDC_APP_VER                     1008
-#define IDC_AUTHOR                      1009
-#define IDC_SYSLINK3                    1010
 #define IDC_BUTTON3                     1010
 #define IDC_DEC                         1011
 #define IDC_BUTTON4                     1012

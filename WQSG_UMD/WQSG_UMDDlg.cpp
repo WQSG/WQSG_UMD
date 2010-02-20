@@ -23,8 +23,6 @@
 #include "WQSG_UMDDlg.h"
 
 
-#include "About.h"
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -509,8 +507,21 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 void CWQSG_UMDDlg::OnBnClickedButton2()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	CAbout dlg;
-	dlg.DoModal();
+	CString strAppName;
+	strAppName.LoadString( IDS_APP_NAME );
+
+	CString strAppVer;
+	strAppVer.LoadString( IDS_APP_VER );
+
+	CString strAuthor1;
+	strAuthor1.LoadString( IDS_APP_AUTHOR );
+
+	CString strAuthor2;
+	strAuthor2.LoadString( IDS_APP_AUTHOR2 );
+
+	WQSG_About( m_hIcon , m_hWnd , L"关于本软件" , strAppName + L"\r\nv" + strAppVer ,
+		L"项目svn :<A HREF=\"http://code.google.com/p/wqsg-umd\">http://code.google.com/p/wqsg-umd</A>\r\n依赖库svn :<A HREF=\"http://code.google.com/p/wqsglib\">http://code.google.com/p/wqsglib</A>\r\n<A HREF=\"http://wqsg.ys168.com\">http://wqsg.ys168.com</A>\r\n" ,
+		strAuthor2 + L"(" + strAuthor1 + L")" + L"\r\nKid" );
 }
 
 void CWQSG_UMDDlg::OnBnClickedButton3()
