@@ -21,7 +21,7 @@
 #include "stdafx.h"
 #include "WQSG_UMD_APP.h"
 #include "WQSG_UMDDlg.h"
-
+#include <WQSG_DirDlg.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -106,7 +106,7 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 
 		IMAGEINFO info = {0};
 		if( !CImageList::FromHandle(hi)->GetImageInfo( 0 , &info ) ||
-			!m_imageList.Create( info.rcImage.right , info.rcImage.bottom , ILC_COLOR , 1 , 1 ) )
+			!m_imageList.Create( info.rcImage.right , info.rcImage.bottom , ILC_COLORDDB , 1 , 1 ) )
 			ASSERT( FALSE );
 
 		m_imageList.SetBkColor( m_cFileList.GetBkColor() );
@@ -374,7 +374,7 @@ void CWQSG_UMDDlg::OnNMRClickListFile(NMHDR *pNMHDR, LRESULT *pResult)
 	}
 }
 
-#include<WQSG_DirDlg.h>
+
 void CWQSG_UMDDlg::OnSavefile()
 {
 	// TODO: 在此添加命令处理程序代码
