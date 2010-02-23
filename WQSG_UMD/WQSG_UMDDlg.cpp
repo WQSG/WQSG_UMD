@@ -21,7 +21,7 @@
 #include "stdafx.h"
 #include "WQSG_UMD_APP.h"
 #include "WQSG_UMDDlg.h"
-#include <WQSG_DirDlg.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
