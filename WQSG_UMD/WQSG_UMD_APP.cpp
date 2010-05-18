@@ -50,19 +50,6 @@ CWQSG_UMDApp theApp;
 
 
 // CWQSG_UMDApp 初始化
-int WQSG_Main( LPWSTR* szArglist , int nArgs )
-{
-
-	if(1)
-	{
-
-	}
-	wprintf( L"暂时不支持命令行" );
-
-	_putws( L"123暂时不支持命令行456" );
-	return 0;
-}
-
 BOOL CWQSG_UMDApp::InitInstance()
 {
 	m_bCmdMode = FALSE;

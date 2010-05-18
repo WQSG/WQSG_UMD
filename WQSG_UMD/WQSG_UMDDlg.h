@@ -28,6 +28,8 @@ class CWQSG_UMDDlg : public CDialog
 	CISO_App m_umd;
 	CMenu m_menu;
 	s32 m_oldOffset;
+
+	CWQSG_StringMgr m_StringMgr;
 public:
 	CWQSG_UMDDlg(CWnd* pParent = NULL);	// 标准构造函数
 

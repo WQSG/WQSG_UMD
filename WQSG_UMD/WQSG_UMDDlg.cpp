@@ -41,6 +41,7 @@ CWQSG_UMDDlg::CWQSG_UMDDlg(CWnd* pParent /*=NULL*/)
 	, m_oldOffset(0)
 	, m_pathW(_T(""))
 	, m_strInfo(_T(""))
+	, m_StringMgr( NULL , 0 )
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -73,8 +74,6 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	MEMORYSTATUS info;
-	GlobalMemoryStatus( &info );
 	// 设置此对话框的图标。当应用程序主窗口不是对话框时，框架将自动执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
@@ -581,12 +580,16 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 	}
 	else if( bFileBreak )
 	{
-		MessageBox( L"打补丁失败" );
+		CloseISO();
+		CString str;
+		str.Format( L"打补丁失败,ISO可能已损坏\r\n\r\n失败原因:\r\n%s" , m_umd.GetErrStr() );
+		MessageBox( str );
 	}
 	else
 	{
-		CloseISO();
-		MessageBox( L"打补丁失败,ISO可能已损坏" );
+		CString str;
+		str.Format( L"打补丁失败\r\n\r\n失败原因:\r\n%s" , m_umd.GetErrStr() );
+		MessageBox( str );
 	}
 }
 
