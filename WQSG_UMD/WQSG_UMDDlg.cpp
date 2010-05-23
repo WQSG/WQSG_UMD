@@ -44,6 +44,10 @@ CWQSG_UMDDlg::CWQSG_UMDDlg(CWnd* pParent /*=NULL*/)
 	, m_StringMgr( NULL , 0 )
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+
+	m_vIsoBaseLang.resize( m_umd.Base_GetDefaultLangStringCount() , NULL );
+	m_vIsoAppLang.resize( m_umd.GetDefaultLangStringCount() , NULL );
+	m_vThisLang.resize( m_StringMgr.GetStringCount() , NULL );
 }
 
 void CWQSG_UMDDlg::DoDataExchange(CDataExchange* pDX)
@@ -176,6 +180,7 @@ bool CWQSG_UMDDlg::OpenISO( CStringW ISO_PathName , const BOOL bCanWrite )
 	if( !m_umd.OpenISO( ISO_PathName , bCanWrite , E_WIT_UMD ) )
 	{
 		MessageBox( m_umd.GetErrStr() );
+		m_umd.CleanErrStr();
 		return false;
 	}
 	m_path = L"";
@@ -286,6 +291,7 @@ void CWQSG_UMDDlg::OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult)
 	{
 		CStringW path;
 		MessageBox( m_umd.GetErrStr() , path = m_path );
+		m_umd.CleanErrStr();
 		CloseISO();
 		return ;
 	}
@@ -330,6 +336,7 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 						if( bFileBreak )
 							CloseISO();
 						MessageBox( m_umd.GetErrStr() );
+						m_umd.CleanErrStr();
 						break;
 					}
 				}
@@ -397,6 +404,7 @@ void CWQSG_UMDDlg::OnSavefile()
 		if( !m_umd.GetFileData( data , m_path , strA ) )
 		{
 			MessageBox( m_umd.GetErrStr() );
+			m_umd.CleanErrStr();
 			break;
 		}
 
@@ -405,6 +413,7 @@ void CWQSG_UMDDlg::OnSavefile()
 			if( !m_umd.ExportDir( m_LastSelDir + str , m_path + strA ) )
 			{
 				MessageBox( m_umd.GetErrStr() );
+				m_umd.CleanErrStr();
 				break;
 			}
 		}
@@ -413,6 +422,7 @@ void CWQSG_UMDDlg::OnSavefile()
 			if( !m_umd.ExportFile( m_LastSelDir + str , m_path , strA ) )
 			{
 				MessageBox( m_umd.GetErrStr() );
+				m_umd.CleanErrStr();
 				break;
 			}
 		}
@@ -448,6 +458,7 @@ void CWQSG_UMDDlg::On32774_替换文件()
 			if( bFileBreak )
 				CloseISO();
 			MessageBox( m_umd.GetErrStr() );
+			m_umd.CleanErrStr();
 		}
 
 		UpDataLbaData();
@@ -475,6 +486,7 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 		if( !m_umd.GetFileData( data , m_path , nameA ) )
 		{
 			MessageBox( m_umd.GetErrStr() );
+			m_umd.CleanErrStr();
 			return ;
 		}
 
@@ -497,6 +509,7 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 				CloseISO();
 
 			MessageBox( m_umd.GetErrStr() );
+			m_umd.CleanErrStr();
 		}
 
 		UpDataLbaData();
@@ -583,12 +596,14 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 		CloseISO();
 		CString str;
 		str.Format( L"打补丁失败,ISO可能已损坏\r\n\r\n失败原因:\r\n%s" , m_umd.GetErrStr() );
+		m_umd.CleanErrStr();
 		MessageBox( str );
 	}
 	else
 	{
 		CString str;
 		str.Format( L"打补丁失败\r\n\r\n失败原因:\r\n%s" , m_umd.GetErrStr() );
+		m_umd.CleanErrStr();
 		MessageBox( str );
 	}
 }
@@ -644,6 +659,7 @@ void CWQSG_UMDDlg::OnBnClickedButton5()
 	{
 		CString str;
 		str.Format( L"创建补丁失败\r\n%s" , m_umd.GetErrStr() );
+		m_umd.CleanErrStr();
 		MessageBox( str , dlg_out.GetPathName() );
 		return;
 	}
@@ -705,4 +721,95 @@ void CWQSG_UMDDlg::SetTitle(BOOL* a_bCanWrite)
 	}
 
 	SetWindowText( strTitle );
+}
+
+template<size_t TMin,size_t TMax>
+bool AddStr( std::vector<WCHAR*>& a_vList , int a_iIndex , const CStringW& a_str )
+{
+	if( a_iIndex >= TMin && a_iIndex < TMax )
+	{
+		const size_t index = a_iIndex - TMin;
+		if( index < a_vList.size() )
+		{
+			if( a_vList[index] )
+			{
+				delete[]a_vList[index];
+				a_vList[index] = NULL;
+			}
+
+			a_vList[index] = new WCHAR[a_str.GetLength()+1];
+
+			WQSG_strcpy( a_str.GetString() , a_vList[index] );
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CWQSG_UMDDlg::LoadLang( CString& a_strFile )
+{
+	CMemTextW tp;
+	if( !tp.Load( a_strFile.GetString() , 1024*1024 ) )
+		return false;
+
+	if( tp.GetCP() != en_CP_UTF8 )
+		return false;
+
+	std::vector<WCHAR*> vIsoBaseLang;
+	std::vector<WCHAR*> vIsoAppLang;
+	std::vector<WCHAR*> vThisLang;
+
+	vIsoBaseLang.resize( m_vIsoBaseLang.size() , NULL );
+	vIsoAppLang.resize( m_vIsoAppLang.size() , NULL );
+	vThisLang.resize( m_vThisLang.size() , NULL );
+
+	while( WCHAR* __line = tp.GetLine() )
+	{
+		CStringW line(__line);
+		delete[]__line;
+
+		line.TrimLeft();
+
+		if( line.GetLength() == 0 )
+			continue;
+
+		if( line[0] == L'#' )
+			continue;
+
+		const int pos = line.Find( L"=" );
+		if( pos < 1 )
+			continue;
+
+		CString strIndex = line.Left( pos );
+		CString strLang = line.Mid( pos + 1 );
+
+		const int iIndex = _wtoi( strIndex.GetString() );
+
+		if( !AddStr<0,10000>( vIsoBaseLang , iIndex , strLang ) )
+			if( !AddStr<10000,20000>( vIsoAppLang , iIndex , strLang ) )
+				AddStr<20000,30000>( vThisLang , iIndex , strLang );
+	}
+
+	DeleteLang( m_vIsoBaseLang );
+	DeleteLang( m_vIsoBaseLang );
+	DeleteLang( m_vThisLang );
+
+	m_vIsoBaseLang = vIsoBaseLang;
+	m_vIsoAppLang = vIsoAppLang;
+	m_vThisLang = vThisLang;
+
+	return true;
+}
+
+void CWQSG_UMDDlg::DeleteLang( std::vector<WCHAR*>& a_vList )
+{
+	for( std::vector<WCHAR*>::iterator it = a_vList.begin() ;
+		it != a_vList.end() ; ++it )
+	{
+		if( (*it) )
+		{
+			delete[](*it);
+			(*it) = NULL;
+		}
+	}
 }

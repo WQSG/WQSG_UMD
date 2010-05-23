@@ -30,9 +30,18 @@ class CWQSG_UMDDlg : public CDialog
 	s32 m_oldOffset;
 
 	CWQSG_StringMgr m_StringMgr;
+	std::vector<WCHAR*> m_vIsoBaseLang;
+	std::vector<WCHAR*> m_vIsoAppLang;
+	std::vector<WCHAR*> m_vThisLang;
 public:
 	CWQSG_UMDDlg(CWnd* pParent = NULL);	// 标准构造函数
 
+	virtual ~CWQSG_UMDDlg()
+	{
+		DeleteLang( m_vIsoBaseLang );
+		DeleteLang( m_vIsoBaseLang );
+		DeleteLang( m_vThisLang );
+	}
 // 对话框数据
 	enum { IDD = IDD_WQSG_UMD_DIALOG };
 
@@ -92,4 +101,7 @@ public:
 	void UiOpenR(void);
 	void UiOpenRW(void);
 	void SetTitle(BOOL* a_bCanWrite);
+
+	bool LoadLang( CString& a_strFile );
+	void DeleteLang( std::vector<WCHAR*>& a_vList );
 };
