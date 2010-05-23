@@ -40,8 +40,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 private:
-	CString m_十进制;
-	CString m_十六进制;
+	CString m_Dec;
+	CString m_Hex;
 
 	CString m_strTitle ;
 	CString m_strDec;

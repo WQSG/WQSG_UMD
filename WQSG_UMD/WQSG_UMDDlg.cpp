@@ -325,7 +325,7 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 				for( int i = 0 ; (i>=0) && (i<fileCount) && ( DragQueryFile( hDrop , i , strPathName , MAX_PATH*2 ) != (UINT)-1 ) ; ++i )
 				{
 					BOOL bFileBreak;
-					if( !m_umd.导入文件( bFileBreak , strPathName , m_path , 0 ) )
+					if( !m_umd.EasyImport( bFileBreak , strPathName , m_path ) )
 					{
 						if( bFileBreak )
 							CloseISO();
@@ -402,7 +402,7 @@ void CWQSG_UMDDlg::OnSavefile()
 
 		if( data.isDir )
 		{
-			if( !m_umd.导出文件夹( m_LastSelDir + str , m_path + strA ) )
+			if( !m_umd.ExportDir( m_LastSelDir + str , m_path + strA ) )
 			{
 				MessageBox( m_umd.GetErrStr() );
 				break;
@@ -410,7 +410,7 @@ void CWQSG_UMDDlg::OnSavefile()
 		}
 		else
 		{
-			if( !m_umd.导出文件( m_LastSelDir + str , m_path , strA ) )
+			if( !m_umd.ExportFile( m_LastSelDir + str , m_path , strA ) )
 			{
 				MessageBox( m_umd.GetErrStr() );
 				break;
@@ -443,7 +443,7 @@ void CWQSG_UMDDlg::On32774_替换文件()
 			return;
 
 		BOOL bFileBreak;
-		if( !m_umd.替换文件( bFileBreak , m_path , strA , dlg.GetPathName() ) )
+		if( !m_umd.ImportFile( bFileBreak , m_path , strA , dlg.GetPathName() ) )
 		{
 			if( bFileBreak )
 				CloseISO();
@@ -491,7 +491,7 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 		m_oldOffset = ibox.GetVal();
 
 		BOOL bFileBreak;
-		if( !m_umd.写文件偏移( bFileBreak , m_path , nameA , m_oldOffset , dlg.GetPathName() ) )
+		if( !m_umd.WriteFile( bFileBreak , m_path , nameA , m_oldOffset , dlg.GetPathName() ) )
 		{
 			if( bFileBreak )
 				CloseISO();
@@ -574,7 +574,7 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 	}
 
 	BOOL bFileBreak;
-	if( m_umd.导入文件包( bFileBreak , fp , TRUE ) )
+	if( m_umd.ImportFilePackage( bFileBreak , fp , TRUE ) )
 	{
 		MessageBox( L"打补丁成功" );
 	}
@@ -640,7 +640,7 @@ void CWQSG_UMDDlg::OnBnClickedButton5()
 		return;
 	}
 
-	if( !m_umd.生成文件包( oldIso , fp , bCheckCrc32 ) )
+	if( !m_umd.MakeFilePackage( oldIso , fp , bCheckCrc32 ) )
 	{
 		CString str;
 		str.Format( L"创建补丁失败\r\n%s" , m_umd.GetErrStr() );

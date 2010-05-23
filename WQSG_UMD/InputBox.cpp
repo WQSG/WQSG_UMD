@@ -29,8 +29,8 @@ IMPLEMENT_DYNAMIC(CInputBox, CDialog)
 
 CInputBox::CInputBox(  CString a_strTitle , CString a_strDec , u32 old , u32 max , CWnd* pParent /*=NULL*/)
 	: CDialog(CInputBox::IDD, pParent)
-	, m_十进制(_T("0"))
-	, m_十六进制(_T("0"))
+	, m_Dec(_T("0"))
+	, m_Hex(_T("0"))
 	, m_val(old)
 	, m_maxval( max )
 	, m_strTitle(a_strTitle)
@@ -46,10 +46,10 @@ CInputBox::~CInputBox()
 void CInputBox::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT1, m_十进制);
-	DDV_MaxChars(pDX, m_十进制, 10);
-	DDX_Text(pDX, IDC_EDIT2, m_十六进制);
-	DDV_MaxChars(pDX, m_十六进制, 8);
+	DDX_Text(pDX, IDC_EDIT1, m_Dec);
+	DDV_MaxChars(pDX, m_Dec, 10);
+	DDX_Text(pDX, IDC_EDIT2, m_Hex);
+	DDV_MaxChars(pDX, m_Hex, 8);
 	DDX_Control(pDX, IDC_EDIT1, m_c10);
 	DDX_Control(pDX, IDC_EDIT2, m_c16);
 	DDX_Text(pDX, IDC_DEC, m_strDec);
@@ -74,21 +74,21 @@ void CInputBox::OnEnChangeEdit1()
 	// TODO:  在此添加控件通知处理程序代码
 	UpdateData();
 
-	s64 val = _ttoi64( m_十进制.GetString() );
+	s64 val = _ttoi64( m_Dec.GetString() );
 
-	bool 改变 = true;
+	bool bChange = true;
 	if( val < 0 )
 		val = 0;
 	else if( val > m_maxval )
 		val = m_maxval;
 	else
-		改变 = false;
+		bChange = false;
 
 	m_val = (u32)val;
 
-	if( 改变 )
-		m_十进制.Format( L"%d" , m_val );
-	m_十六进制.Format( L"%X" , m_val );
+	if( bChange )
+		m_Dec.Format( L"%d" , m_val );
+	m_Hex.Format( L"%X" , m_val );
 
 	UpdateData(FALSE);
 }
@@ -104,35 +104,35 @@ void CInputBox::OnEnChangeEdit2()
 	UpdateData();
 	int start , end;
 	m_c16.GetSel( start , end );
-	m_十六进制.MakeUpper();
+	m_Hex.MakeUpper();
 
-	for( int i = 0 ; (i>=0) && m_十六进制[i] ; ++i )
+	for( int i = 0 ; (i>=0) && m_Hex[i] ; ++i )
 	{
-		const WCHAR ch = m_十六进制[i];
+		const WCHAR ch = m_Hex[i];
 		if( ( ch < L'0' || ch > L'9' ) && ( ch < L'A' || ch > L'F' ) )
 		{
-			m_十六进制.Delete( i );
+			m_Hex.Delete( i );
 			if( start > i-- )
 				--start;
 		}
 	}
 
 	s64 val = 0;
-	swscanf( m_十六进制.GetString() , L"%X" , &val );
+	swscanf( m_Hex.GetString() , L"%X" , &val );
 
-	bool 改变 = true;
+	bool bChange = true;
 	if( val < 0 )
 		val = 0;
 	else if( val > m_maxval )
 		val = m_maxval;
 	else
-		改变 = false;
+		bChange = false;
 
 	m_val = (u32)val;
 
-	m_十进制.Format( L"%d" , m_val );
-	if( 改变 )
-		m_十六进制.Format( L"%X" , m_val );
+	m_Dec.Format( L"%d" , m_val );
+	if( bChange )
+		m_Hex.Format( L"%X" , m_val );
 
 	UpdateData(FALSE);
 	m_c16.SetSel( start , start );
@@ -153,8 +153,8 @@ BOOL CInputBox::OnInitDialog()
 	else if( m_val > m_maxval )
 		m_val = m_maxval;
 
-	m_十进制.Format( L"%d" , m_val );
-	m_十六进制.Format( L"%X" , m_val );
+	m_Dec.Format( L"%d" , m_val );
+	m_Hex.Format( L"%X" , m_val );
 
 	UpdateData(FALSE);
 
