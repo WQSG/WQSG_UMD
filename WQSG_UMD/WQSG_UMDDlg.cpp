@@ -133,6 +133,7 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 		EndDialog( IDCANCEL );
 		return FALSE;
 	}
+	//FindLang();
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -746,7 +747,7 @@ bool AddStr( std::vector<WCHAR*>& a_vList , int a_iIndex , const CStringW& a_str
 	return false;
 }
 
-bool CWQSG_UMDDlg::LoadLang( CString& a_strFile )
+bool CWQSG_UMDDlg::LoadLang( const CString& a_strFile , CStringW* a_pstrLangName )
 {
 	CMemTextW tp;
 	if( !tp.Load( a_strFile.GetString() , 1024*1024 ) )
@@ -759,9 +760,12 @@ bool CWQSG_UMDDlg::LoadLang( CString& a_strFile )
 	std::vector<WCHAR*> vIsoAppLang;
 	std::vector<WCHAR*> vThisLang;
 
-	vIsoBaseLang.resize( m_vIsoBaseLang.size() , NULL );
-	vIsoAppLang.resize( m_vIsoAppLang.size() , NULL );
-	vThisLang.resize( m_vThisLang.size() , NULL );
+	if( !a_pstrLangName )
+	{
+		vIsoBaseLang.resize( m_vIsoBaseLang.size() , NULL );
+		vIsoAppLang.resize( m_vIsoAppLang.size() , NULL );
+		vThisLang.resize( m_vThisLang.size() , NULL );
+	}
 
 	while( WCHAR* __line = tp.GetLine() )
 	{
@@ -774,6 +778,17 @@ bool CWQSG_UMDDlg::LoadLang( CString& a_strFile )
 			continue;
 
 		if( line[0] == L'#' )
+			continue;
+
+		if( line[0] == L'*' )
+		{
+			if( a_pstrLangName )
+			{
+				*a_pstrLangName = line.Mid(1);
+				return true;
+			}
+		}
+		else if( a_pstrLangName )
 			continue;
 
 		const int pos = line.Find( L"=" );
@@ -789,6 +804,9 @@ bool CWQSG_UMDDlg::LoadLang( CString& a_strFile )
 			if( !AddStr<10000,20000>( vIsoAppLang , iIndex , strLang ) )
 				AddStr<20000,30000>( vThisLang , iIndex , strLang );
 	}
+
+	if( a_pstrLangName )
+		return false;
 
 	DeleteLang( m_vIsoBaseLang );
 	DeleteLang( m_vIsoBaseLang );
@@ -812,4 +830,29 @@ void CWQSG_UMDDlg::DeleteLang( std::vector<WCHAR*>& a_vList )
 			(*it) = NULL;
 		}
 	}
+}
+
+bool CWQSG_UMDDlg::FindLang()
+{
+	CFileFind find;
+
+	WCHAR exe[MAX_PATH*2];
+	if( !WQSG_GetExePath( exe , MAX_PATH*2 ) ||
+		!find.FindFile( CString( exe ) + L"\\lang\\*.lang" ) )
+		return false;
+
+	BOOL bNext;
+	do
+	{
+		bNext = find.FindNextFile();
+
+		const CString strFile( find.GetFilePath() );
+		CString strName;
+		if( LoadLang( strFile , &strName ) )
+		{
+		}
+	}
+	while(bNext);
+
+	return TRUE;
 }

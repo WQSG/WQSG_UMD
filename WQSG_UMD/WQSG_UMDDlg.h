@@ -102,6 +102,8 @@ public:
 	void UiOpenRW(void);
 	void SetTitle(BOOL* a_bCanWrite);
 
-	bool LoadLang( CString& a_strFile );
+	bool LoadLang( const CString& a_strFile , CStringW* a_pstrLangName );
 	void DeleteLang( std::vector<WCHAR*>& a_vList );
+
+	bool FindLang();
 };
