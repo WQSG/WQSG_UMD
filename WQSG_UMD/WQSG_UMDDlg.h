@@ -20,7 +20,7 @@
 
 #pragma once
 #include "afxcmn.h"
-
+#include <map>
 // CWQSG_UMDDlg 对话框
 class CWQSG_UMDDlg : public CDialog
 {
@@ -30,17 +30,32 @@ class CWQSG_UMDDlg : public CDialog
 	s32 m_oldOffset;
 
 	CWQSG_StringMgr m_StringMgr;
-	std::vector<WCHAR*> m_vIsoBaseLang;
-	std::vector<WCHAR*> m_vIsoAppLang;
-	std::vector<WCHAR*> m_vThisLang;
+
+	struct SLang
+	{
+		LCID m_lcid;
+		CStringW m_strName;
+		std::vector<WCHAR*> m_vIsoBaseLang;
+		std::vector<WCHAR*> m_vIsoAppLang;
+		std::vector<WCHAR*> m_vThisLang;
+	};
+
+	LCID m_SelLcid;
+	std::map<LCID,SLang> m_Langs;
 public:
 	CWQSG_UMDDlg(CWnd* pParent = NULL);	// 标准构造函数
 
 	virtual ~CWQSG_UMDDlg()
 	{
-		DeleteLang( m_vIsoBaseLang );
-		DeleteLang( m_vIsoBaseLang );
-		DeleteLang( m_vThisLang );
+		std::map<LCID,SLang>::iterator it = m_Langs.begin();
+		for( ; it != m_Langs.end() ; ++it )
+		{
+			SLang& lang = it->second;
+
+			DeleteLang( lang.m_vIsoBaseLang );
+			DeleteLang( lang.m_vIsoAppLang );
+			DeleteLang( lang.m_vThisLang );
+		}
 	}
 // 对话框数据
 	enum { IDD = IDD_WQSG_UMD_DIALOG };
@@ -93,6 +108,9 @@ public:
 	afx_msg void OnBnClickedButton2();
 private:
 	CString m_strInfo;
+	bool LoadLang( const CString& a_strFile , SLang& a_Lang );
+	void DeleteLang( std::vector<WCHAR*>& a_vList );
+	bool FindLang();
 public:
 	afx_msg void OnBnClickedButton3();
 	afx_msg void OnBnClickedButton4();
@@ -102,8 +120,23 @@ public:
 	void UiOpenRW(void);
 	void SetTitle(BOOL* a_bCanWrite);
 
-	bool LoadLang( const CString& a_strFile , CStringW* a_pstrLangName );
-	void DeleteLang( std::vector<WCHAR*>& a_vList );
+	void UseLang( LCID a_lcid )
+	{
+		std::map<LCID,SLang>::iterator it = m_Langs.find(a_lcid);
+		if( it != m_Langs.end() )
+		{
+			const SLang& lang = it->second;
 
-	bool FindLang();
+			m_SelLcid = a_lcid;
+
+			if( lang.m_vIsoBaseLang.size() )
+				m_umd.Base_SetLangString( (&lang.m_vIsoBaseLang[0]) , lang.m_vIsoBaseLang.size() );
+
+			if( lang.m_vIsoAppLang.size() )
+				m_umd.SetLangString( (&lang.m_vIsoAppLang[0]) , lang.m_vIsoAppLang.size() );
+
+			if( lang.m_vThisLang.size() )
+				m_StringMgr.SetString( (&lang.m_vThisLang[0]) , lang.m_vThisLang.size() );
+		}
+	}
 };

@@ -42,12 +42,9 @@ CWQSG_UMDDlg::CWQSG_UMDDlg(CWnd* pParent /*=NULL*/)
 	, m_pathW(_T(""))
 	, m_strInfo(_T(""))
 	, m_StringMgr( NULL , 0 )
+	, m_SelLcid(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-
-	m_vIsoBaseLang.resize( m_umd.Base_GetDefaultLangStringCount() , NULL );
-	m_vIsoAppLang.resize( m_umd.GetDefaultLangStringCount() , NULL );
-	m_vThisLang.resize( m_StringMgr.GetStringCount() , NULL );
 }
 
 void CWQSG_UMDDlg::DoDataExchange(CDataExchange* pDX)
@@ -133,7 +130,8 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 		EndDialog( IDCANCEL );
 		return FALSE;
 	}
-	//FindLang();
+	FindLang();
+	UseLang( GetThreadLocale() );
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -727,7 +725,7 @@ void CWQSG_UMDDlg::SetTitle(BOOL* a_bCanWrite)
 template<size_t TMin,size_t TMax>
 bool AddStr( std::vector<WCHAR*>& a_vList , int a_iIndex , const CStringW& a_str )
 {
-	if( a_iIndex >= TMin && a_iIndex < TMax )
+	if( a_iIndex > TMin && a_iIndex < TMax )
 	{
 		const size_t index = a_iIndex - TMin;
 		if( index < a_vList.size() )
@@ -747,25 +745,21 @@ bool AddStr( std::vector<WCHAR*>& a_vList , int a_iIndex , const CStringW& a_str
 	return false;
 }
 
-bool CWQSG_UMDDlg::LoadLang( const CString& a_strFile , CStringW* a_pstrLangName )
+bool CWQSG_UMDDlg::LoadLang( const CString& a_strFile , SLang& a_Lang )
 {
+	if( a_Lang.m_vIsoBaseLang.size() || a_Lang.m_vIsoAppLang.size() || a_Lang.m_vThisLang.size() )
+		return false;
+
+	a_Lang.m_vIsoBaseLang.resize( m_umd.Base_GetDefaultLangStringCount() , NULL );
+	a_Lang.m_vIsoAppLang.resize( m_umd.GetDefaultLangStringCount() , NULL );
+	a_Lang.m_vThisLang.resize( m_StringMgr.GetStringCount() , NULL );
+
 	CMemTextW tp;
 	if( !tp.Load( a_strFile.GetString() , 1024*1024 ) )
 		return false;
 
 	if( tp.GetCP() != en_CP_UTF8 )
 		return false;
-
-	std::vector<WCHAR*> vIsoBaseLang;
-	std::vector<WCHAR*> vIsoAppLang;
-	std::vector<WCHAR*> vThisLang;
-
-	if( !a_pstrLangName )
-	{
-		vIsoBaseLang.resize( m_vIsoBaseLang.size() , NULL );
-		vIsoAppLang.resize( m_vIsoAppLang.size() , NULL );
-		vThisLang.resize( m_vThisLang.size() , NULL );
-	}
 
 	while( WCHAR* __line = tp.GetLine() )
 	{
@@ -780,17 +774,6 @@ bool CWQSG_UMDDlg::LoadLang( const CString& a_strFile , CStringW* a_pstrLangName
 		if( line[0] == L'#' )
 			continue;
 
-		if( line[0] == L'*' )
-		{
-			if( a_pstrLangName )
-			{
-				*a_pstrLangName = line.Mid(1);
-				return true;
-			}
-		}
-		else if( a_pstrLangName )
-			continue;
-
 		const int pos = line.Find( L"=" );
 		if( pos < 1 )
 			continue;
@@ -799,22 +782,13 @@ bool CWQSG_UMDDlg::LoadLang( const CString& a_strFile , CStringW* a_pstrLangName
 		CString strLang = line.Mid( pos + 1 );
 
 		const int iIndex = _wtoi( strIndex.GetString() );
+		if( iIndex <= 0 )
+			continue;
 
-		if( !AddStr<0,10000>( vIsoBaseLang , iIndex , strLang ) )
-			if( !AddStr<10000,20000>( vIsoAppLang , iIndex , strLang ) )
-				AddStr<20000,30000>( vThisLang , iIndex , strLang );
+		if( !AddStr<0,10000>( a_Lang.m_vIsoBaseLang , iIndex , strLang ) )
+			if( !AddStr<10000,20000>( a_Lang.m_vIsoAppLang , iIndex , strLang ) )
+				AddStr<20000,30000>( a_Lang.m_vThisLang , iIndex , strLang );
 	}
-
-	if( a_pstrLangName )
-		return false;
-
-	DeleteLang( m_vIsoBaseLang );
-	DeleteLang( m_vIsoBaseLang );
-	DeleteLang( m_vThisLang );
-
-	m_vIsoBaseLang = vIsoBaseLang;
-	m_vIsoAppLang = vIsoAppLang;
-	m_vThisLang = vThisLang;
 
 	return true;
 }
@@ -846,11 +820,33 @@ bool CWQSG_UMDDlg::FindLang()
 	{
 		bNext = find.FindNextFile();
 
-		const CString strFile( find.GetFilePath() );
-		CString strName;
-		if( LoadLang( strFile , &strName ) )
+		const CStringW strLocaleName( find.GetFileTitle() );
+		//if( !IsValidLocaleName( strLocaleName ) )
+		//	continue;
+
+		const LCID lcid = LocaleNameToLCID( strLocaleName , 0 );
+		if( lcid == 0 )
+			continue;
+
+		WCHAR buf[1024] = {};
+		if( !GetLocaleInfo( lcid , LOCALE_SNATIVELANGNAME , buf , 1024 ) )
 		{
+			ASSERT(0);
+			continue;
 		}
+
+		if( m_Langs.find( lcid ) != m_Langs.end() )
+		{
+			ASSERT( m_Langs.find( lcid ) == m_Langs.end() );
+		}
+
+		SLang& lang = m_Langs[lcid];
+		lang.m_lcid = lcid;
+		lang.m_strName = buf;
+
+		const CString strFile( find.GetFilePath() );
+		if( !LoadLang( strFile , lang ) )
+			m_Langs.erase( m_Langs.find( lcid ) );
 	}
 	while(bNext);
 
