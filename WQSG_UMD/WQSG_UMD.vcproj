@@ -349,6 +349,10 @@
 				RelativePath=".\WQSG_UMDDlg.h"
 				>
 			</File>
+			<File
+				RelativePath=".\WQSG_UMDDlg_Lang.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="资源文件"

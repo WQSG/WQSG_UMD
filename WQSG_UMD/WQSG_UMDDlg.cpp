@@ -22,6 +22,7 @@
 #include "WQSG_UMD_APP.h"
 #include "WQSG_UMDDlg.h"
 
+#include "WQSG_UMDDlg_Lang.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,13 +36,60 @@ struct
 	{	L"LBA"		,	80	},
 	{	L"size"		,	100	},
 };
+
+typedef void (AFX_MSG_CALL CWQSG_UMDDlg::*TMenuFun)();
+struct SMenuData
+{
+	size_t m_LangId;
+	TMenuFun m_pFn;
+	UINT m_uFlags;
+};
+
+const SMenuData g_MenuData0[] = {
+	{ 1 , &CWQSG_UMDDlg::OnExportFiles , MF_STRING },
+	{ 0 , NULL , MF_SEPARATOR },
+	{ 2 , NULL , MF_STRING },
+	{ 3 , NULL , MF_STRING },//L"添加文件" 
+	{ 0 , NULL , MF_SEPARATOR },
+	{ 4 , &CWQSG_UMDDlg::On32774_替换文件 , MF_STRING },
+	{ 5 , &CWQSG_UMDDlg::On32776_写文件偏移 , MF_STRING },
+};
+//MF_GRAYED
+const SMenuData g_MenuData1[] = {
+	{ 1 , &CWQSG_UMDDlg::OnExportFiles , MF_STRING },
+	{ 0 , NULL , MF_SEPARATOR },
+	{ 2 , NULL , MF_STRING },
+	{ 3 , NULL , MF_STRING },//L"添加文件" 
+	{ 0 , NULL , MF_SEPARATOR },
+	{ 4 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
+	{ 5 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
+};
+
+const SMenuData g_MenuData2[] = {
+	{ 1 , &CWQSG_UMDDlg::OnExportFiles , MF_STRING },
+	{ 0 , NULL , MF_SEPARATOR },
+	{ 2 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
+	{ 3 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
+	{ 0 , NULL , MF_SEPARATOR },
+	{ 4 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
+	{ 5 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
+};
+
+#define DEF_MAKE_ITEM( __defx ) { __defx , sizeof(__defx)/sizeof(*__defx) },
+const CWQSG_UMDDlg::SMenuDataList CWQSG_UMDDlg::ms_MenuDataList[CWQSG_UMDDlg::ms_Max_Pop] = {
+	DEF_MAKE_ITEM( g_MenuData0 )
+	DEF_MAKE_ITEM( g_MenuData1 )
+	DEF_MAKE_ITEM( g_MenuData2 )
+};
+#undef DEF_MAKE_ITEM
+
 // CWQSG_UMDDlg 对话框
 CWQSG_UMDDlg::CWQSG_UMDDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CWQSG_UMDDlg::IDD, pParent)
 	, m_oldOffset(0)
 	, m_pathW(_T(""))
 	, m_strInfo(_T(""))
-	, m_StringMgr( NULL , 0 )
+	, m_StringMgr( g_CWQSG_UMDDlg_String , sizeof(g_CWQSG_UMDDlg_String)/sizeof(*g_CWQSG_UMDDlg_String) )
 	, m_SelLcid(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -55,21 +103,47 @@ void CWQSG_UMDDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT2, m_strInfo);
 }
 
+BOOL CWQSG_UMDDlg::InitPopMenu( CMenu& a_Menu , const SMenuData* a_pMenuData , size_t a_Count , WORD a_Id )
+{
+	if( !a_Menu.CreatePopupMenu() )
+		goto __gtErr;
+
+	for( ; a_Count > 0 ; ++a_pMenuData , ++a_Id , --a_Count )
+	{
+		if( m_MenuFun.find(a_Id) != m_MenuFun.end() )
+		{
+			ASSERT( m_MenuFun.find(a_Id) == m_MenuFun.end() );
+			goto __gtErr;
+		}
+
+		if( !a_Menu.AppendMenuW( a_pMenuData->m_uFlags , a_Id , m_StringMgr.GetString(a_pMenuData->m_LangId) ) )
+			goto __gtErr;
+
+		m_MenuFun[a_Id] = a_pMenuData;
+	}
+
+	if( !m_menu.AppendMenu( MF_STRING | MF_BYPOSITION | MF_POPUP , (UINT_PTR)a_Menu.GetSafeHmenu() , L"?" ) )
+		goto __gtErr;
+
+	return TRUE;
+__gtErr:
+	MessageBox( L"Init menu error" );
+	return FALSE;
+}
+
 BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()	//}}AFX_MSG_MAP
 	ON_WM_CLOSE()
-	ON_BN_CLICKED(IDC_BUTTON1, &CWQSG_UMDDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON_OPEN, &CWQSG_UMDDlg::OnBnClickedButton1)
 	ON_NOTIFY(LVN_ITEMACTIVATE, IDC_LIST_FILE, &CWQSG_UMDDlg::OnLvnItemActivateListFile)
 	ON_BN_CLICKED(IDC_BUTTON_UP, &CWQSG_UMDDlg::OnBnClickedButtonUp)
 	ON_NOTIFY(NM_RCLICK, IDC_LIST_FILE, &CWQSG_UMDDlg::OnNMRClickListFile)
-	ON_COMMAND(ID_32771_SAVEFILE, &CWQSG_UMDDlg::OnSavefile)
-	ON_COMMAND(ID_32774, &CWQSG_UMDDlg::On32774_替换文件)
-	ON_COMMAND(ID_32776, &CWQSG_UMDDlg::On32776_写文件偏移)
-	ON_BN_CLICKED(IDC_BUTTON2, &CWQSG_UMDDlg::OnBnClickedButton2)
-	ON_BN_CLICKED(IDC_BUTTON3, &CWQSG_UMDDlg::OnBnClickedButton3)
-	ON_BN_CLICKED(IDC_BUTTON4, &CWQSG_UMDDlg::OnBnClickedButton4)
-	ON_BN_CLICKED(IDC_BUTTON5, &CWQSG_UMDDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON_About, &CWQSG_UMDDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON_Expand_ISO, &CWQSG_UMDDlg::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BUTTON_Apply_WIFP, &CWQSG_UMDDlg::OnBnClickedButton4)
+	ON_BN_CLICKED(IDC_BUTTON_Create_WIFP, &CWQSG_UMDDlg::OnBnClickedButton5)
+	ON_COMMAND_RANGE( 1000 , 2000 , &CWQSG_UMDDlg::OnPopMenu)
 END_MESSAGE_MAP()// CWQSG_UMDDlg 消息处理程序
 BOOL CWQSG_UMDDlg::OnInitDialog()
 {
@@ -79,6 +153,8 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	FindLang();
+	UseLang( GetThreadLocale() );
 	// TODO: 在此添加额外的初始化代码
 	UiClose();
 	m_cFileList.SetExtendedStyle( m_cFileList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
@@ -88,7 +164,7 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 	{
 		if( i != m_cFileList.InsertColumn( i , WQSG_FileList[i].name , 0 , WQSG_FileList[i].w ) )
 		{
-			MessageBox( L"FileList 初始化失败" );
+			MessageBox( L"Filelist init error" );
 			EndDialog( IDCANCEL );
 			return FALSE;
 		}
@@ -123,15 +199,27 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 
 	m_cFileList.SetImageList( &m_imageList , LVSIL_SMALL );
 	//--------------------------------------------------------------
-	m_menu.DestroyMenu();
-	if( !m_menu.LoadMenu( IDR_MENU1 ) )
+	if( !m_menu.CreateMenu() )
 	{
-		MessageBox( L"加载资源失败(menu)" );
+		MessageBox( L"Init menu error" );
 		EndDialog( IDCANCEL );
 		return FALSE;
 	}
-	FindLang();
-	UseLang( GetThreadLocale() );
+
+	for( int i = 0 ; i < ms_Max_Pop ; ++i )
+	{
+		if( !InitPopMenu( m_PopMenu[i] , ms_MenuDataList[i].m_pData , ms_MenuDataList[i].m_Count , 1000 + (WORD)m_MenuFun.size() ) )
+		{
+			EndDialog( IDCANCEL );
+			return FALSE;
+		}
+	}
+
+	SetDlgItemTextW( IDC_BUTTON_OPEN , m_StringMgr.GetString(6) );
+	SetDlgItemTextW( IDC_BUTTON_Apply_WIFP , m_StringMgr.GetString(7) );
+	SetDlgItemTextW( IDC_BUTTON_Create_WIFP , m_StringMgr.GetString(8) );
+	SetDlgItemTextW( IDC_BUTTON_Expand_ISO , m_StringMgr.GetString(9) );
+	SetDlgItemTextW( IDC_BUTTON_About , m_StringMgr.GetString(10) );
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -244,9 +332,8 @@ void CWQSG_UMDDlg::UpDataGUI()
 		}
 		m_umd.CloseFindIsoFile( handle );
 
-		m_strInfo.Format( L"文件夹 %d , 文件 %d" , uDir , uFile );
-
-		m_strInfo.AppendFormat( L"\r\nLBA总数: %d , 空闲LBA总数: %d \r\n空闲的LBA block数为: %d , 最大的空闲LBA block为: %d" , m_umd.GetMaxLbaCount() , m_uFreeLbaCount , m_uFreeBlockCount , m_uMaxFreeBlock );
+		m_strInfo.Format( m_StringMgr.GetString(13) ,
+			uDir , uFile , m_umd.GetMaxLbaCount() , m_uFreeLbaCount , m_uFreeBlockCount , m_uMaxFreeBlock );
 
 		m_pathW = m_path;
 	}
@@ -284,27 +371,7 @@ void CWQSG_UMDDlg::OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult)
 
 	CStringA strNameA;
 	strNameA = strNameW;
-#if 0
-	_tISO_DirEnt tP_DirEnt;
-	if( !m_umd.GetPathDirEnt( tP_DirEnt , m_path ) )
-	{
-		CStringW path;
-		MessageBox( m_umd.GetErrStr() , path = m_path );
-		m_umd.CleanErrStr();
-		CloseISO();
-		return ;
-	}
-	_tISO_DirEnt tmp;
-	if( m_umd.FindFile( tP_DirEnt , strNameA.GetString() , tmp ) < 0 )
-	{
-		MessageBox( L"目录表出错?" );
-		CloseISO();
-		return ;
-	}
 
-	if( (tmp.attr & 2) != 2 )
-		return;
-#endif
 	if( m_path.Right( 1 ) != '/' )
 		m_path += '/';
 
@@ -373,17 +440,17 @@ void CWQSG_UMDDlg::OnNMRClickListFile(NMHDR *pNMHDR, LRESULT *pResult)
 
 	if( count > 0 )
 	{
-		CMenu*const sub = m_menu.GetSubMenu( (count>1)?0:1 );
+		CMenu*const sub = m_menu.GetSubMenu( m_umd.IsCanWrite()?((count==1)?0:1):2 );
 		if( sub )
 			sub->TrackPopupMenu( TPM_LEFTALIGN /*|TPM_RIGHTBUTTON*/ , pos.x , pos.y , this );
 	}
 }
 
 
-void CWQSG_UMDDlg::OnSavefile()
+void CWQSG_UMDDlg::OnExportFiles()
 {
 	// TODO: 在此添加命令处理程序代码
-	CWQSG_DirDlg dlg( m_hWnd , L"输出路径..." , m_LastSelDir.GetString() );
+	CWQSG_DirDlg dlg( m_hWnd , m_StringMgr.GetString(20) , m_LastSelDir.GetString() );
 	WCHAR outPath[MAX_PATH*2];
 	if( !dlg.GetPath( outPath ) )
 		return ;
@@ -434,7 +501,7 @@ void CWQSG_UMDDlg::On32774_替换文件()
 	// TODO: 在此添加命令处理程序代码
 	if( !m_umd.IsCanWrite() )
 	{
-		MessageBox( L"没有写权限" );
+		MessageBox( m_StringMgr.GetString(14) );
 		return;
 	}
 
@@ -446,7 +513,7 @@ void CWQSG_UMDDlg::On32774_替换文件()
 		CStringA strA; strA = str;
 
 		static ::CWQSGFileDialog_Open dlg( L"*.*|*.*||" );
-		dlg.SetWindowTitle( L"选择替换用的文件..." );
+		dlg.SetWindowTitle( m_StringMgr.GetString(21) );
 
 		if( IDOK != dlg.DoModal() )
 			return;
@@ -464,13 +531,26 @@ void CWQSG_UMDDlg::On32774_替换文件()
 	}
 }
 
+void CWQSG_UMDDlg::OnPopMenu(UINT a_nID )
+{
+	std::map<WORD,const SMenuData*>::iterator it = m_MenuFun.find(a_nID);
+	if( it != m_MenuFun.end() )
+	{
+		const SMenuData* pData = it->second;
+		if( pData->m_pFn )
+		{
+			(this->*pData->m_pFn)();
+		}
+	}
+}
+
 #include "InputBox.h"
 void CWQSG_UMDDlg::On32776_写文件偏移()
 {
 	// TODO: 在此添加命令处理程序代码
 	if( !m_umd.IsCanWrite() )
 	{
-		MessageBox( L"没有写权限" );
+		MessageBox( m_StringMgr.GetString(14) );
 		return;
 	}
 
@@ -530,8 +610,9 @@ void CWQSG_UMDDlg::OnBnClickedButton2()
 	CString strAuthor2;
 	strAuthor2.LoadString( IDS_APP_AUTHOR2 );
 
-	WQSG_About( m_hIcon , m_hWnd , L"关于本软件" , strAppName + L"\r\nv" + strAppVer ,
-		L"项目svn : <A HREF=\"http://code.google.com/p/wqsg-umd\">http://code.google.com/p/wqsg-umd</A>\r\n依赖库svn : <A HREF=\"http://code.google.com/p/wqsglib\">http://code.google.com/p/wqsglib</A>\r\n                 <A HREF=\"http://wqsg.ys168.com\">http://wqsg.ys168.com</A>\r\n" ,
+	WQSG_About( m_hIcon , m_hWnd , m_StringMgr.GetString(10) , strAppName + L"\r\nv" + strAppVer ,
+		CStringW(m_StringMgr.GetString(15)) + L" : <A HREF=\"http://code.google.com/p/wqsg-umd\">http://code.google.com/p/wqsg-umd</A>\r\n"
+		+ CStringW(m_StringMgr.GetString(16)) + L" : <A HREF=\"http://code.google.com/p/wqsglib\">http://code.google.com/p/wqsglib</A>\r\n                 <A HREF=\"http://wqsg.ys168.com\">http://wqsg.ys168.com</A>\r\n" ,
 		strAuthor2 + L"(" + strAuthor1 + L")" + L"\r\nKid" );
 }
 
@@ -542,9 +623,9 @@ void CWQSG_UMDDlg::OnBnClickedButton3()
 		return;
 
 	CString str;
-	str.Format( L"输入要扩容LBA数\r\n每个LBA的大小为%d字节" , m_umd.GetPerLbaSize() );
+	str.Format( m_StringMgr.GetString(17) , m_umd.GetPerLbaSize() );
 
-	CInputBox ibox( L"扩容ISO" , str , 0 , (n32)(((u32)-1)>>1) - m_umd.GetMaxLbaCount() );
+	CInputBox ibox( m_StringMgr.GetString(9) , str , 0 , (n32)(((u32)-1)>>1) - m_umd.GetMaxLbaCount() );
 	if( IDOK != ibox.DoModal() )
 		return ;
 
@@ -552,14 +633,8 @@ void CWQSG_UMDDlg::OnBnClickedButton3()
 
 	if( lba > 0 )
 	{
-		if( m_umd.AddLbaCount( lba ) )
-		{
-			MessageBox( L"扩容成功" );
-		}
-		else
-		{
-			MessageBox( L"扩容失败" );
-		}
+		MessageBox( m_umd.AddLbaCount( lba )?m_StringMgr.GetString(18):m_StringMgr.GetString(19) );
+
 		UpDataLbaData();
 	}
 }
@@ -709,14 +784,9 @@ void CWQSG_UMDDlg::SetTitle(BOOL* a_bCanWrite)
 	CString strTitle( str1 + L" v" + str2 ); 
 	if( a_bCanWrite )
 	{
-		if( *a_bCanWrite )
-		{
-			strTitle += L" [写模式]";
-		}
-		else	
-		{
-			strTitle += L" [只读模式]";
-		}
+		strTitle += L" ";
+
+		strTitle += (*a_bCanWrite)?m_StringMgr.GetString(11):m_StringMgr.GetString(12);
 	}
 
 	SetWindowText( strTitle );

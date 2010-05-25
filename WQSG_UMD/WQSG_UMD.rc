@@ -98,14 +98,14 @@ CAPTION "WQSG_UMD v2009.04220"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LIST_FILE,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,44,305,106,WS_EX_ACCEPTFILES
-    PUSHBUTTON      "打开ISO",IDC_BUTTON1,7,6,50,14
+    PUSHBUTTON      "打开ISO",IDC_BUTTON_OPEN,7,6,50,14
     PUSHBUTTON      "UP",IDC_BUTTON_UP,7,27,23,14
     EDITTEXT        IDC_EDIT1,30,27,282,14,ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "关于本软件",IDC_BUTTON2,262,6,50,14
+    PUSHBUTTON      "关于本软件",IDC_BUTTON_About,262,6,50,14
     EDITTEXT        IDC_EDIT2,7,151,305,36,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY
-    PUSHBUTTON      "扩容ISO",IDC_BUTTON3,206,6,50,14
-    PUSHBUTTON      "应用补丁",IDC_BUTTON4,62,6,50,14
-    PUSHBUTTON      "创建补丁",IDC_BUTTON5,116,6,50,14
+    PUSHBUTTON      "扩容ISO",IDC_BUTTON_Expand_ISO,206,6,50,14
+    PUSHBUTTON      "应用补丁",IDC_BUTTON_Apply_WIFP,62,6,50,14
+    PUSHBUTTON      "创建补丁",IDC_BUTTON_Create_WIFP,116,6,50,14
 END
 
 
@@ -134,30 +134,6 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_MENU1 MENU 
-BEGIN
-    POPUP "多文件"
-    BEGIN
-        MENUITEM "导出文件",                        ID_32771_SAVEFILE
-        MENUITEM "替换文件",                        ID_32772, GRAYED
-        MENUITEM "导入文件到偏移",                     ID_32775, GRAYED
-        MENUITEM SEPARATOR
-    END
-    POPUP "单文件"
-    BEGIN
-        MENUITEM "导出文件",                        ID_32771_SAVEFILE
-        MENUITEM "替换文件",                        ID_32774
-        MENUITEM "导入文件到偏移",                     ID_32776
-        MENUITEM SEPARATOR
-    END
-END
 
 
 /////////////////////////////////////////////////////////////////////////////

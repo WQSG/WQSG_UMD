@@ -21,9 +21,12 @@
 #pragma once
 #include "afxcmn.h"
 #include <map>
+
+struct SMenuData;
 // CWQSG_UMDDlg 对话框
 class CWQSG_UMDDlg : public CDialog
 {
+	const static int ms_Max_Pop = 3;
 // 构造
 	CISO_App m_umd;
 	CMenu m_menu;
@@ -42,6 +45,17 @@ class CWQSG_UMDDlg : public CDialog
 
 	LCID m_SelLcid;
 	std::map<LCID,SLang> m_Langs;
+
+	struct SMenuDataList
+	{
+		const SMenuData* m_pData;
+		size_t m_Count;
+	};
+
+	CMenu m_PopMenu[ms_Max_Pop];
+	static const SMenuDataList ms_MenuDataList[ms_Max_Pop];
+
+	std::map<WORD,const SMenuData*> m_MenuFun;
 public:
 	CWQSG_UMDDlg(CWnd* pParent = NULL);	// 标准构造函数
 
@@ -99,9 +113,11 @@ public:
 private:
 	CString m_LastSelDir;
 public:
-	afx_msg void OnSavefile();
+	afx_msg void OnExportFiles();
 	afx_msg void On32774_替换文件();
 	afx_msg void On32776_写文件偏移();
+
+	afx_msg void OnPopMenu(UINT a_nID );
 private:
 	CString m_pathW;
 public:
@@ -139,4 +155,6 @@ public:
 				m_StringMgr.SetString( (&lang.m_vThisLang[0]) , lang.m_vThisLang.size() );
 		}
 	}
+
+	BOOL InitPopMenu( CMenu& a_Menu , const SMenuData* a_pMenuData , size_t a_Count , WORD a_Id );
 };
