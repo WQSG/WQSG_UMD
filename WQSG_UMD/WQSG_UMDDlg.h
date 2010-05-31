@@ -45,6 +45,7 @@ class CWQSG_UMDDlg : public CDialog
 
 	LCID m_SelLcid;
 	std::map<LCID,SLang> m_Langs;
+	std::vector<LCID> m_lcids;
 
 	struct SMenuDataList
 	{
@@ -114,47 +115,30 @@ private:
 	CString m_LastSelDir;
 public:
 	afx_msg void OnExportFiles();
-	afx_msg void On32774_替换文件();
-	afx_msg void On32776_写文件偏移();
+	afx_msg void OnReplaceFile();
+	afx_msg void OnWriteFile();
 
 	afx_msg void OnPopMenu(UINT a_nID );
 private:
 	CString m_pathW;
 public:
-	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedButtonAbout();
 private:
 	CString m_strInfo;
 	bool LoadLang( const CString& a_strFile , SLang& a_Lang );
 	void DeleteLang( std::vector<WCHAR*>& a_vList );
 	bool FindLang();
 public:
-	afx_msg void OnBnClickedButton3();
-	afx_msg void OnBnClickedButton4();
-	afx_msg void OnBnClickedButton5();
+	afx_msg void OnBnClickedButtonExpand_ISO();
+	afx_msg void OnBnClickedButtonApply_WIFP();
+	afx_msg void OnBnClickedButtonCreate_WIFP();
 	void UiClose(void);
 	void UiOpenR(void);
 	void UiOpenRW(void);
 	void SetTitle(BOOL* a_bCanWrite);
 
-	void UseLang( LCID a_lcid )
-	{
-		std::map<LCID,SLang>::iterator it = m_Langs.find(a_lcid);
-		if( it != m_Langs.end() )
-		{
-			const SLang& lang = it->second;
-
-			m_SelLcid = a_lcid;
-
-			if( lang.m_vIsoBaseLang.size() )
-				m_umd.Base_SetLangString( (&lang.m_vIsoBaseLang[0]) , lang.m_vIsoBaseLang.size() );
-
-			if( lang.m_vIsoAppLang.size() )
-				m_umd.SetLangString( (&lang.m_vIsoAppLang[0]) , lang.m_vIsoAppLang.size() );
-
-			if( lang.m_vThisLang.size() )
-				m_StringMgr.SetString( (&lang.m_vThisLang[0]) , lang.m_vThisLang.size() );
-		}
-	}
+	void UseLang( LCID a_lcid );
 
 	BOOL InitPopMenu( CMenu& a_Menu , const SMenuData* a_pMenuData , size_t a_Count , WORD a_Id );
+	afx_msg void OnBnClickedButtonLang();
 };

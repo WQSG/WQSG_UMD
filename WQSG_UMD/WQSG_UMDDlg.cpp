@@ -23,6 +23,7 @@
 #include "WQSG_UMDDlg.h"
 
 #include "WQSG_UMDDlg_Lang.h"
+#include "SelLang.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,8 +52,8 @@ const SMenuData g_MenuData0[] = {
 	{ 2 , NULL , MF_STRING },
 	{ 3 , NULL , MF_STRING },//L"添加文件" 
 	{ 0 , NULL , MF_SEPARATOR },
-	{ 4 , &CWQSG_UMDDlg::On32774_替换文件 , MF_STRING },
-	{ 5 , &CWQSG_UMDDlg::On32776_写文件偏移 , MF_STRING },
+	{ 4 , &CWQSG_UMDDlg::OnReplaceFile , MF_STRING },
+	{ 5 , &CWQSG_UMDDlg::OnWriteFile , MF_STRING },
 };
 //MF_GRAYED
 const SMenuData g_MenuData1[] = {
@@ -139,11 +140,12 @@ BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_NOTIFY(LVN_ITEMACTIVATE, IDC_LIST_FILE, &CWQSG_UMDDlg::OnLvnItemActivateListFile)
 	ON_BN_CLICKED(IDC_BUTTON_UP, &CWQSG_UMDDlg::OnBnClickedButtonUp)
 	ON_NOTIFY(NM_RCLICK, IDC_LIST_FILE, &CWQSG_UMDDlg::OnNMRClickListFile)
-	ON_BN_CLICKED(IDC_BUTTON_About, &CWQSG_UMDDlg::OnBnClickedButton2)
-	ON_BN_CLICKED(IDC_BUTTON_Expand_ISO, &CWQSG_UMDDlg::OnBnClickedButton3)
-	ON_BN_CLICKED(IDC_BUTTON_Apply_WIFP, &CWQSG_UMDDlg::OnBnClickedButton4)
-	ON_BN_CLICKED(IDC_BUTTON_Create_WIFP, &CWQSG_UMDDlg::OnBnClickedButton5)
-	ON_COMMAND_RANGE( 1000 , 2000 , &CWQSG_UMDDlg::OnPopMenu)
+	ON_BN_CLICKED(IDC_BUTTON_About, &CWQSG_UMDDlg::OnBnClickedButtonAbout)
+	ON_BN_CLICKED(IDC_BUTTON_Expand_ISO, &CWQSG_UMDDlg::OnBnClickedButtonExpand_ISO)
+	ON_BN_CLICKED(IDC_BUTTON_Apply_WIFP, &CWQSG_UMDDlg::OnBnClickedButtonApply_WIFP)
+	ON_BN_CLICKED(IDC_BUTTON_Create_WIFP, &CWQSG_UMDDlg::OnBnClickedButtonCreate_WIFP)
+	ON_COMMAND_RANGE( 2000 , 3000 , &CWQSG_UMDDlg::OnPopMenu)
+	ON_BN_CLICKED(IDC_BUTTON_LANG, &CWQSG_UMDDlg::OnBnClickedButtonLang)
 END_MESSAGE_MAP()// CWQSG_UMDDlg 消息处理程序
 BOOL CWQSG_UMDDlg::OnInitDialog()
 {
@@ -208,18 +210,13 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 
 	for( int i = 0 ; i < ms_Max_Pop ; ++i )
 	{
-		if( !InitPopMenu( m_PopMenu[i] , ms_MenuDataList[i].m_pData , ms_MenuDataList[i].m_Count , 1000 + (WORD)m_MenuFun.size() ) )
+		if( !InitPopMenu( m_PopMenu[i] , ms_MenuDataList[i].m_pData , ms_MenuDataList[i].m_Count , 2000 + (WORD)m_MenuFun.size() ) )
 		{
 			EndDialog( IDCANCEL );
 			return FALSE;
 		}
 	}
 
-	SetDlgItemTextW( IDC_BUTTON_OPEN , m_StringMgr.GetString(6) );
-	SetDlgItemTextW( IDC_BUTTON_Apply_WIFP , m_StringMgr.GetString(7) );
-	SetDlgItemTextW( IDC_BUTTON_Create_WIFP , m_StringMgr.GetString(8) );
-	SetDlgItemTextW( IDC_BUTTON_Expand_ISO , m_StringMgr.GetString(9) );
-	SetDlgItemTextW( IDC_BUTTON_About , m_StringMgr.GetString(10) );
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -496,7 +493,7 @@ void CWQSG_UMDDlg::OnExportFiles()
 	UpDataLbaData();
 }
 
-void CWQSG_UMDDlg::On32774_替换文件()
+void CWQSG_UMDDlg::OnReplaceFile()
 {
 	// TODO: 在此添加命令处理程序代码
 	if( !m_umd.IsCanWrite() )
@@ -545,7 +542,7 @@ void CWQSG_UMDDlg::OnPopMenu(UINT a_nID )
 }
 
 #include "InputBox.h"
-void CWQSG_UMDDlg::On32776_写文件偏移()
+void CWQSG_UMDDlg::OnWriteFile()
 {
 	// TODO: 在此添加命令处理程序代码
 	if( !m_umd.IsCanWrite() )
@@ -595,7 +592,7 @@ void CWQSG_UMDDlg::On32776_写文件偏移()
 	}
 }
 
-void CWQSG_UMDDlg::OnBnClickedButton2()
+void CWQSG_UMDDlg::OnBnClickedButtonAbout()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CString strAppName;
@@ -616,7 +613,7 @@ void CWQSG_UMDDlg::OnBnClickedButton2()
 		strAuthor2 + L"(" + strAuthor1 + L")" + L"\r\nKid" );
 }
 
-void CWQSG_UMDDlg::OnBnClickedButton3()
+void CWQSG_UMDDlg::OnBnClickedButtonExpand_ISO()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	if( !m_umd.IsCanWrite() )
@@ -639,7 +636,7 @@ void CWQSG_UMDDlg::OnBnClickedButton3()
 	}
 }
 
-void CWQSG_UMDDlg::OnBnClickedButton4()
+void CWQSG_UMDDlg::OnBnClickedButtonApply_WIFP()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData();
@@ -682,7 +679,7 @@ void CWQSG_UMDDlg::OnBnClickedButton4()
 	}
 }
 
-void CWQSG_UMDDlg::OnBnClickedButton5()
+void CWQSG_UMDDlg::OnBnClickedButtonCreate_WIFP()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	UpdateData();
@@ -917,8 +914,45 @@ bool CWQSG_UMDDlg::FindLang()
 		const CString strFile( find.GetFilePath() );
 		if( !LoadLang( strFile , lang ) )
 			m_Langs.erase( m_Langs.find( lcid ) );
+
+		m_lcids.push_back( lcid );
 	}
 	while(bNext);
 
 	return TRUE;
+}
+
+void CWQSG_UMDDlg::OnBnClickedButtonLang()
+{
+	// TODO: 在此添加控件通知处理程序代码
+
+	CSelLang dlg( m_SelLcid , &m_lcids );
+	if( dlg.DoModal() == IDOK )
+		UseLang( dlg.GetLcid() );
+}
+
+void CWQSG_UMDDlg::UseLang( LCID a_lcid )
+{
+	std::map<LCID,SLang>::iterator it = m_Langs.find(a_lcid);
+	if( it != m_Langs.end() )
+	{
+		const SLang& lang = it->second;
+
+		m_SelLcid = a_lcid;
+
+		if( lang.m_vIsoBaseLang.size() )
+			m_umd.Base_SetLangString( (&lang.m_vIsoBaseLang[0]) , lang.m_vIsoBaseLang.size() );
+
+		if( lang.m_vIsoAppLang.size() )
+			m_umd.SetLangString( (&lang.m_vIsoAppLang[0]) , lang.m_vIsoAppLang.size() );
+
+		if( lang.m_vThisLang.size() )
+			m_StringMgr.SetString( (&lang.m_vThisLang[0]) , lang.m_vThisLang.size() );
+	}
+
+	SetDlgItemTextW( IDC_BUTTON_OPEN , m_StringMgr.GetString(6) );
+	SetDlgItemTextW( IDC_BUTTON_Apply_WIFP , m_StringMgr.GetString(7) );
+	SetDlgItemTextW( IDC_BUTTON_Create_WIFP , m_StringMgr.GetString(8) );
+	SetDlgItemTextW( IDC_BUTTON_Expand_ISO , m_StringMgr.GetString(9) );
+	SetDlgItemTextW( IDC_BUTTON_About , m_StringMgr.GetString(10) );
 }

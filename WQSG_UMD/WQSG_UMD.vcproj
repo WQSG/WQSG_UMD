@@ -280,6 +280,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelLang.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -331,6 +335,10 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SelLang.h"
 				>
 			</File>
 			<File

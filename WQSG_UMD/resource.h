@@ -9,6 +9,7 @@
 #define IDS_APP_NAME                    133
 #define IDS_APP_VER                     134
 #define IDS_APP_AUTHOR                  135
+#define IDD_DLG_SEL_LANG                135
 #define IDS_APP_AUTHOR2                 136
 #define IDC_LIST_FILE                   1000
 #define IDC_BUTTON1                     1001
@@ -18,6 +19,8 @@
 #define IDC_EDIT2                       1004
 #define IDC_BUTTON2                     1006
 #define IDC_BUTTON_About                1006
+#define IDC_BUTTON_About2               1007
+#define IDC_BUTTON_LANG                 1007
 #define IDC_BUTTON3                     1010
 #define IDC_BUTTON_Expand_ISO           1010
 #define IDC_DEC                         1011
@@ -25,6 +28,7 @@
 #define IDC_BUTTON_Apply_WIFP           1012
 #define IDC_BUTTON5                     1013
 #define IDC_BUTTON_Create_WIFP          1013
+#define IDC_LIST1                       1014
 #define ID_32771                        32771
 #define ID_32773                        32773
 #define ID_32772_REFILE                 32778
@@ -34,9 +38,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        135
+#define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1014
+#define _APS_NEXT_CONTROL_VALUE         1015
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
