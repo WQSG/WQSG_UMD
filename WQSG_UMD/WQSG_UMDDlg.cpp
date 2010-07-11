@@ -888,14 +888,31 @@ bool CWQSG_UMDDlg::FindLang()
 		bNext = find.FindNextFile();
 
 		const CStringW strLocaleName( find.GetFileTitle() );
-		//if( !IsValidLocaleName( strLocaleName ) )
-		//	continue;
+#if 1
+		if( !IsValidLocaleName( strLocaleName ) )
+			continue;
+
+		WCHAR buf[1024] = {};
+		if( !GetLocaleInfoEx( strLocaleName , LOCALE_ILANGUAGE , buf , 1024 ) )
+			continue;
+
+		int iTmp = 0;
+		swscanf( buf , L"%x" , &iTmp );
+
+		const LCID lcid = iTmp;
+		if( lcid == 0 )
+			continue;
+#else
+// 		if( !IsValidLocaleName( strLocaleName ) )
+// 			continue;
 
 		const LCID lcid = LocaleNameToLCID( strLocaleName , 0 );
 		if( lcid == 0 )
 			continue;
 
 		WCHAR buf[1024] = {};
+#endif
+		
 		if( !GetLocaleInfo( lcid , LOCALE_SNATIVELANGNAME , buf , 1024 ) )
 		{
 			ASSERT(0);
