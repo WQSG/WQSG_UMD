@@ -101,23 +101,10 @@ BOOL CSelLang::OnInitDialog()
 		}
 
 		m_cList.SetItemData( iIndex , lcid );
-#if 1
-		if( GetLocaleInfo( lcid , LOCALE_SNAME , buf , 1024 ) )
-		{
+
+		if( WQSG_LCIDToLocaleName( lcid , buf , 1024 ) )
 			m_cList.SetItemText( iIndex , 2 , buf );
-		}
-		else if( GetLocaleInfo( lcid , LOCALE_SISO639LANGNAME , buf , 1024 ) &&
-			GetLocaleInfo( lcid , LOCALE_SISO3166CTRYNAME , buf + wcslen(buf) + 1 , 1024 - wcslen(buf) - 1 ) )
-		{
-			buf[wcslen(buf)] = L'-';
-			m_cList.SetItemText( iIndex , 2 , buf );
-		}
-#else
-		if( LCIDToLocaleName( lcid , buf , 1024 , 0 ) )
-		{
-			m_cList.SetItemText( iIndex , 2 , buf );
-		}
-#endif
+
 		if( GetLocaleInfo( lcid , LOCALE_SENGLANGUAGE , buf , 1024 ) )
 		{
 			m_cList.SetItemText( iIndex , 1 , buf );

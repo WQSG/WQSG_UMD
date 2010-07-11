@@ -889,17 +889,7 @@ bool CWQSG_UMDDlg::FindLang()
 
 		const CStringW strLocaleName( find.GetFileTitle() );
 #if 1
-		if( !IsValidLocaleName( strLocaleName ) )
-			continue;
-
-		WCHAR buf[1024] = {};
-		if( !GetLocaleInfoEx( strLocaleName , LOCALE_ILANGUAGE , buf , 1024 ) )
-			continue;
-
-		int iTmp = 0;
-		swscanf( buf , L"%x" , &iTmp );
-
-		const LCID lcid = iTmp;
+		const LCID lcid = WQSG_LocaleNameToLCID( strLocaleName );
 		if( lcid == 0 )
 			continue;
 #else
@@ -910,9 +900,9 @@ bool CWQSG_UMDDlg::FindLang()
 		if( lcid == 0 )
 			continue;
 
-		WCHAR buf[1024] = {};
-#endif
 		
+#endif
+		WCHAR buf[1024] = {};
 		if( !GetLocaleInfo( lcid , LOCALE_SNATIVELANGNAME , buf , 1024 ) )
 		{
 			ASSERT(0);

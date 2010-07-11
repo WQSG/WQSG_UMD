@@ -73,3 +73,11 @@
 
 #include<WQSG_lib.h>
 #include<ISO/ISO_App.h>
+
+
+BOOL WQSG_LCIDToLocaleName(
+						   __in LCID     Locale,
+						   __out_ecount_opt(cchName) LPWSTR  lpName,
+						   __in int      cchName);
+
+LCID WQSG_LocaleNameToLCID( LPCWSTR  lpName );
