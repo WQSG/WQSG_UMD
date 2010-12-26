@@ -828,7 +828,7 @@ bool CWQSG_UMDDlg::LoadLang( const CString& a_strFile , SLang& a_Lang )
 	if( tp.GetCP() != en_CP_UTF8 )
 		return false;
 
-	while( WCHAR* __line = tp.GetLine() )
+	while( const WCHAR* __line = tp.GetLine() )
 	{
 		CStringW line(__line);
 		delete[]__line;

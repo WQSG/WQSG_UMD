@@ -79,11 +79,6 @@ BOOL WQSG_LCIDToLocaleName(
 #endif
 }
 
-BOOL InitLCID()
-{
-	
-}
-
 LCID WQSG_LocaleNameToLCID( LPCWSTR  lpName )
 {
 	CStringW str( lpName );
