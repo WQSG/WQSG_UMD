@@ -398,11 +398,13 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 					{
 						if( bFileBreak )
 							CloseISO();
+
 						MessageBox( m_umd.GetErrStr() );
 						m_umd.CleanErrStr();
 						break;
 					}
 				}
+				m_umd.Flush();
 				UpDataLbaData();
 			}
 		}
@@ -523,7 +525,7 @@ void CWQSG_UMDDlg::OnReplaceFile()
 			MessageBox( m_umd.GetErrStr() );
 			m_umd.CleanErrStr();
 		}
-
+		m_umd.Flush();
 		UpDataLbaData();
 	}
 }
@@ -588,6 +590,7 @@ void CWQSG_UMDDlg::OnWriteFile()
 			m_umd.CleanErrStr();
 		}
 
+		m_umd.Flush();
 		UpDataLbaData();
 	}
 }
@@ -630,8 +633,10 @@ void CWQSG_UMDDlg::OnBnClickedButtonExpand_ISO()
 
 	if( lba > 0 )
 	{
-		MessageBox( m_umd.AddLbaCount( lba )?m_StringMgr.GetString(18):m_StringMgr.GetString(19) );
+		const WCHAR* pMsg = m_umd.AddLbaCount( lba )?m_StringMgr.GetString(18):m_StringMgr.GetString(19);
+		m_umd.Flush();
 
+		MessageBox( pMsg );
 		UpDataLbaData();
 	}
 }
@@ -660,6 +665,7 @@ void CWQSG_UMDDlg::OnBnClickedButtonApply_WIFP()
 	BOOL bFileBreak;
 	if( m_umd.ImportFilePackage( bFileBreak , fp , TRUE ) )
 	{
+		m_umd.Flush();
 		MessageBox( L"´ò²¹¶¡³É¹¦" );
 	}
 	else if( bFileBreak )
