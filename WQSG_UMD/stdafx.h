@@ -72,7 +72,7 @@
 
 
 #include<WQSG_lib.h>
-#include<ISO/ISO_App.h>
+#include<Win32/ISO/ISO_App.h>
 
 
 BOOL WQSG_LCIDToLocaleName(

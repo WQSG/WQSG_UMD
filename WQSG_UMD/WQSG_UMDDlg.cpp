@@ -831,7 +831,7 @@ bool CWQSG_UMDDlg::LoadLang( const CString& a_strFile , SLang& a_Lang )
 	if( !tp.Load( a_strFile.GetString() , 1024*1024 ) )
 		return false;
 
-	if( tp.GetCP() != en_CP_UTF8 )
+	if( tp.GetCP() != E_CP_UTF8 )
 		return false;
 
 	while( const WCHAR* __line = tp.GetLine() )
