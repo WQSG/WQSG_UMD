@@ -18,7 +18,7 @@
 #pragma once
 #include "afxwin.h"
 #include "afxcmn.h"
-
+#include "Control\CListCtrl_SortItems.h"
 
 // CSelLang ¶Ô»°¿ò
 
@@ -45,7 +45,7 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 private:
-	CListCtrl m_cList;
+	CListCtrl_SortItems m_cList;
 public:
 	afx_msg void OnBnClickedOk();
 

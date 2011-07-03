@@ -11,6 +11,10 @@
 #define IDS_APP_AUTHOR                  135
 #define IDD_DLG_SEL_LANG                135
 #define IDS_APP_AUTHOR2                 136
+#define IDB_DOWNARROW                   136
+#define IDB_UPARROW                     137
+#define IDS_STRING137                   137
+#define IDS_APP_SVN                     137
 #define IDC_LIST_FILE                   1000
 #define IDC_BUTTON1                     1001
 #define IDC_BUTTON_OPEN                 1001
@@ -29,6 +33,7 @@
 #define IDC_BUTTON5                     1013
 #define IDC_BUTTON_Create_WIFP          1013
 #define IDC_LIST1                       1014
+#define IDC_PROGRESS_INFO               1015
 #define ID_32771                        32771
 #define ID_32773                        32773
 #define ID_32772_REFILE                 32778
@@ -38,9 +43,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_RESOURCE_VALUE        138
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1015
+#define _APS_NEXT_CONTROL_VALUE         1016
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

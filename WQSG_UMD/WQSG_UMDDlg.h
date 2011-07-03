@@ -19,21 +19,32 @@
 //
 
 #pragma once
+
 #include "afxcmn.h"
+#include "Control\CListCtrl_SortItems.h"
 #include <map>
+
+#define WQSG_PROCESS	1
 
 struct SMenuData;
 // CWQSG_UMDDlg 对话框
 class CWQSG_UMDDlg : public CDialog
 {
-	const static int ms_Max_Pop = 3;
+	const static int ms_Max_Pop = 4;
 // 构造
-	CISO_App m_umd;
+	
 	CMenu m_menu;
-	s32 m_oldOffset;
 
+public:
+	CISO_App m_umd;
 	CWQSG_StringMgr m_StringMgr;
+	s32 m_oldOffset;
+	CString m_LastSelDir;
+	CString m_strInfo;
+	CString m_pathW;
+	CStringA m_path;
 
+protected:
 	struct SLang
 	{
 		LCID m_lcid;
@@ -75,6 +86,34 @@ public:
 // 对话框数据
 	enum { IDD = IDD_WQSG_UMD_DIALOG };
 
+	void WorkingFinish()
+	{
+		m_bWorking = false;
+		m_cProcess.ShowWindow(SW_HIDE);
+		KillTimer(WQSG_PROCESS);
+		m_cFileList.EnableWindow(TRUE);
+	}
+
+	void WorkingStart()
+	{
+		m_bWorking = true;
+		m_cProcess.SetPos(0);
+		m_cProcess.SetStep(10);
+		m_cProcess.SetRange32(0, 100);
+		m_cProcess.ModifyStyle(NULL, PBM_SETMARQUEE);
+		m_cProcess.ShowWindow(SW_SHOW);
+		SetTimer(WQSG_PROCESS, 50, NULL);
+		m_cFileList.EnableWindow(FALSE);
+	}
+
+	int MsgBoxError(LPCWSTR lpString)
+	{
+		return ::MessageBox(m_hWnd, lpString, L"错误", MB_ICONERROR | MB_OK | MB_SETFOREGROUND);
+	}
+	int MsgBoxInfo(LPCWSTR lpString)
+	{
+		return ::MessageBox(m_hWnd, lpString, L"提示", MB_ICONINFORMATION | MB_OK | MB_SETFOREGROUND);
+	}
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
@@ -82,56 +121,63 @@ protected:
 // 实现
 protected:
 	HICON m_hIcon;
+	bool m_bWorking;
+	bool IsWorking();
+	
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnClose();
-protected:
+
 	virtual void OnCancel();
 	virtual void OnOK();
-private:
+
+public:
 	CImageList m_imageList;
-	CListCtrl m_cFileList;
-	CStringA m_path;
+	CListCtrl_SortItems m_cFileList;
+	CProgressCtrl m_cProcess;
+
+	
 	bool OpenISO( CStringW ISO_PathName , const BOOL bCanWrite );
 	void CloseISO();
-	void UpDataGUI();
+	void UpDataGUI(bool bNewThread = true);
+	void UpDataLbaData(bool bNewThread = true);
 
 	u32 m_uMaxFreeBlock ;
 	u32 m_uFreeLbaCount ;
 	u32 m_uFreeBlockCount;
-	void UpDataLbaData();
+	
 public:
+	afx_msg void OnClose();
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnBnClickedButtonUp();
 	afx_msg void OnNMRClickListFile(NMHDR *pNMHDR, LRESULT *pResult);
-private:
-	CString m_LastSelDir;
+
 public:
 	afx_msg void OnExportFiles();
 	afx_msg void OnReplaceFile();
 	afx_msg void OnWriteFile();
+	afx_msg void OnCreateDir();
+	afx_msg void OnAddFile();
 
-	afx_msg void OnPopMenu(UINT a_nID );
-private:
-	CString m_pathW;
-public:
+	afx_msg void OnPopMenu(UINT a_nID);
 	afx_msg void OnBnClickedButtonAbout();
+
+	
 private:
-	CString m_strInfo;
 	bool LoadLang( const CString& a_strFile , SLang& a_Lang );
 	void DeleteLang( std::vector<WCHAR*>& a_vList );
 	bool FindLang();
+
 public:
 	afx_msg void OnBnClickedButtonExpand_ISO();
 	afx_msg void OnBnClickedButtonApply_WIFP();
 	afx_msg void OnBnClickedButtonCreate_WIFP();
+	afx_msg void OnBnClickedButtonLang();
 	void UiClose(void);
 	void UiOpenR(void);
 	void UiOpenRW(void);
@@ -140,5 +186,4 @@ public:
 	void UseLang( LCID a_lcid );
 
 	BOOL InitPopMenu( CMenu& a_Menu , const SMenuData* a_pMenuData , size_t a_Count , WORD a_Id );
-	afx_msg void OnBnClickedButtonLang();
 };

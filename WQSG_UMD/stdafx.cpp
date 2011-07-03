@@ -21,8 +21,9 @@
 
 #include "stdafx.h"
 
-
-#include<Win32/ISO/ISO_cpp.h>
+#include <map>
+#include <string>
+#include <Win32/ISO/ISO_cpp.h>
 
 class CWQSG_LCID
 {

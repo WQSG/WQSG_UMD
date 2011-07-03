@@ -24,18 +24,21 @@
 
 #include "WQSG_UMDDlg_Lang.h"
 #include "SelLang.h"
+#include <vector>
+
+#define WM_WQSG_UPDATE (WM_USER + 0x10)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 struct
 {
-	WCHAR const*const	name;
+	const WCHAR*		name;
 	const int			w;
 }WQSG_FileList[] = {
-	{	L"fileName"	,	300	},
-	{	L"LBA"		,	80	},
-	{	L"size"		,	100	},
+	{	g_CWQSG_UMDDlg_String[23]	,	300	},
+	{	g_CWQSG_UMDDlg_String[24]	,	80	},
+	{	g_CWQSG_UMDDlg_String[25]	,	100	},
 };
 
 typedef void (AFX_MSG_CALL CWQSG_UMDDlg::*TMenuFun)();
@@ -46,11 +49,30 @@ struct SMenuData
 	UINT m_uFlags;
 };
 
+struct SFileData
+{
+	//int iIndex;
+	bool bDir;
+	CStringW szName;
+	unsigned long lba;
+	unsigned long size;
+};
+
+struct SThreadData
+{
+	CWQSG_UMDDlg *pDlg;
+	//std::string 在线程传递中更安全
+	std::string szData1;
+	std::string szData2;
+	std::wstring szWideData1;
+	std::vector<std::wstring> vecData;
+};
+
 const SMenuData g_MenuData0[] = {
 	{ 1 , &CWQSG_UMDDlg::OnExportFiles , MF_STRING },
 	{ 0 , NULL , MF_SEPARATOR },
-	{ 2 , NULL , MF_STRING },
-	{ 3 , NULL , MF_STRING },//L"添加文件" 
+	{ 2 , &CWQSG_UMDDlg::OnCreateDir , MF_STRING },
+	{ 3 , &CWQSG_UMDDlg::OnAddFile , MF_STRING },//L"添加文件" 
 	{ 0 , NULL , MF_SEPARATOR },
 	{ 4 , &CWQSG_UMDDlg::OnReplaceFile , MF_STRING },
 	{ 5 , &CWQSG_UMDDlg::OnWriteFile , MF_STRING },
@@ -59,9 +81,9 @@ const SMenuData g_MenuData0[] = {
 const SMenuData g_MenuData1[] = {
 	{ 1 , &CWQSG_UMDDlg::OnExportFiles , MF_STRING },
 	{ 0 , NULL , MF_SEPARATOR },
-	{ 2 , NULL , MF_STRING },
-	{ 3 , NULL , MF_STRING },//L"添加文件" 
-	{ 0 , NULL , MF_SEPARATOR },
+	{ 2 , &CWQSG_UMDDlg::OnCreateDir , MF_STRING },
+	{ 3 , &CWQSG_UMDDlg::OnAddFile , MF_STRING },//L"添加文件" 
+	{ 0 , NULL , MF_SEPARATOR | MF_DISABLED},
 	{ 4 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
 	{ 5 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
 };
@@ -69,11 +91,21 @@ const SMenuData g_MenuData1[] = {
 const SMenuData g_MenuData2[] = {
 	{ 1 , &CWQSG_UMDDlg::OnExportFiles , MF_STRING },
 	{ 0 , NULL , MF_SEPARATOR },
-	{ 2 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
-	{ 3 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
-	{ 0 , NULL , MF_SEPARATOR },
+	{ 2 , &CWQSG_UMDDlg::OnCreateDir , MF_STRING },
+	{ 3 , &CWQSG_UMDDlg::OnAddFile , MF_STRING },
+	{ 0 , NULL , MF_SEPARATOR | MF_DISABLED },
 	{ 4 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
 	{ 5 , NULL , MF_STRING | MF_DISABLED | MF_GRAYED },
+};
+
+const SMenuData g_MenuData3[] = {
+	{ 1 , &CWQSG_UMDDlg::OnExportFiles , MF_STRING | MF_GRAYED },
+	{ 0 , NULL , MF_SEPARATOR },
+	{ 2 , &CWQSG_UMDDlg::OnCreateDir , MF_STRING },
+	{ 3 , &CWQSG_UMDDlg::OnAddFile , MF_STRING },//L"添加文件" 
+	{ 0 , NULL , MF_SEPARATOR },
+	{ 4 , &CWQSG_UMDDlg::OnReplaceFile , MF_STRING | MF_GRAYED },
+	{ 5 , &CWQSG_UMDDlg::OnWriteFile , MF_STRING | MF_GRAYED },
 };
 
 #define DEF_MAKE_ITEM( __defx ) { __defx , sizeof(__defx)/sizeof(*__defx) },
@@ -81,6 +113,7 @@ const CWQSG_UMDDlg::SMenuDataList CWQSG_UMDDlg::ms_MenuDataList[CWQSG_UMDDlg::ms
 	DEF_MAKE_ITEM( g_MenuData0 )
 	DEF_MAKE_ITEM( g_MenuData1 )
 	DEF_MAKE_ITEM( g_MenuData2 )
+	DEF_MAKE_ITEM( g_MenuData3 )
 };
 #undef DEF_MAKE_ITEM
 
@@ -92,6 +125,7 @@ CWQSG_UMDDlg::CWQSG_UMDDlg(CWnd* pParent /*=NULL*/)
 	, m_strInfo(_T(""))
 	, m_StringMgr( g_CWQSG_UMDDlg_String , sizeof(g_CWQSG_UMDDlg_String)/sizeof(*g_CWQSG_UMDDlg_String) )
 	, m_SelLcid(0)
+	, m_bWorking(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -102,6 +136,7 @@ void CWQSG_UMDDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST_FILE, m_cFileList);
 	DDX_Text(pDX, IDC_EDIT1, m_pathW);
 	DDX_Text(pDX, IDC_EDIT2, m_strInfo);
+	DDX_Control(pDX, IDC_PROGRESS_INFO, m_cProcess);
 }
 
 BOOL CWQSG_UMDDlg::InitPopMenu( CMenu& a_Menu , const SMenuData* a_pMenuData , size_t a_Count , WORD a_Id )
@@ -128,7 +163,7 @@ BOOL CWQSG_UMDDlg::InitPopMenu( CMenu& a_Menu , const SMenuData* a_pMenuData , s
 
 	return TRUE;
 __gtErr:
-	MessageBox( L"Init menu error" );
+	MsgBoxError(L"Init menu error!");
 	return FALSE;
 }
 
@@ -147,6 +182,7 @@ BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_COMMAND_RANGE( 2000 , 3000 , &CWQSG_UMDDlg::OnPopMenu)
 	ON_BN_CLICKED(IDC_BUTTON_LANG, &CWQSG_UMDDlg::OnBnClickedButtonLang)
 END_MESSAGE_MAP()// CWQSG_UMDDlg 消息处理程序
+
 BOOL CWQSG_UMDDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -159,14 +195,18 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 	UseLang( GetThreadLocale() );
 	// TODO: 在此添加额外的初始化代码
 	UiClose();
-	m_cFileList.SetExtendedStyle( m_cFileList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
+	//m_cFileList.SetExtendedStyle( m_cFileList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
+	m_cFileList.AddNumColumn(1);
+	m_cFileList.AddNumColumn(2);
+
+	m_cProcess.ShowWindow(SW_HIDE);
 
 	const int count = sizeof(WQSG_FileList)/sizeof(*WQSG_FileList);
 	for( int i = 0 ; (i >= 0) && (i < count) ; ++i )
 	{
 		if( i != m_cFileList.InsertColumn( i , WQSG_FileList[i].name , 0 , WQSG_FileList[i].w ) )
 		{
-			MessageBox( L"Filelist init error" );
+			MsgBoxError(L"Filelist init error!");
 			EndDialog( IDCANCEL );
 			return FALSE;
 		}
@@ -184,7 +224,7 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 
 		IMAGEINFO info = {0};
 		if( !CImageList::FromHandle(hi)->GetImageInfo( 0 , &info ) ||
-			!m_imageList.Create( info.rcImage.right , info.rcImage.bottom , ILC_COLORDDB , 1 , 1 ) )
+			!m_imageList.Create( info.rcImage.right , info.rcImage.bottom , ILC_COLOR32 | ILC_MASK, 1 , 1 ) )
 			ASSERT( FALSE );
 
 		m_imageList.SetBkColor( m_cFileList.GetBkColor() );
@@ -203,7 +243,7 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 	//--------------------------------------------------------------
 	if( !m_menu.CreateMenu() )
 	{
-		MessageBox( L"Init menu error" );
+		MsgBoxError(L"Init menu error!");
 		EndDialog( IDCANCEL );
 		return FALSE;
 	}
@@ -251,96 +291,183 @@ HCURSOR CWQSG_UMDDlg::OnQueryDragIcon(){	return static_cast<HCURSOR>(m_hIcon);}
 void CWQSG_UMDDlg::OnClose()
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
-
-	CDialog::OnClose();
-	EndDialog( IDCANCEL );
+	if (!IsWorking())
+	{
+		CDialog::OnClose();
+		EndDialog( IDCANCEL );
+	}
 }
 
 void CWQSG_UMDDlg::OnCancel(){}
 void CWQSG_UMDDlg::OnOK(){}
 bool CWQSG_UMDDlg::OpenISO( CStringW ISO_PathName , const BOOL bCanWrite )
 {
+	if (IsWorking())
+	{
+		return false;
+	}
+
 	CloseISO();
 	if( !m_umd.OpenISO( ISO_PathName , bCanWrite , E_WIT_UMD ) )
 	{
-		MessageBox( m_umd.GetErrStr() );
+		MsgBoxError(m_umd.GetErrStr());
 		m_umd.CleanErrStr();
 		return false;
 	}
 	m_path = L"";
-	UpDataLbaData();
 	m_umd.IsCanWrite()?UiOpenRW():UiOpenR();
+
+	UpDataLbaData();
+
 	return true;
 }
 
 void CWQSG_UMDDlg::CloseISO()
 {
 	UiClose();
-	m_umd.CloseISO( );
+	m_umd.CloseISO();
 	m_path = "";
-	UpDataGUI();
+	m_pathW = L"";
+	UpDataGUI(false);
 }
 
-void CWQSG_UMDDlg::UpDataLbaData()
+void CWQSG_UMDDlg::UpDataLbaData(bool bNewThread)
 {
+	if (bNewThread)
+	{
+		if (IsWorking())
+		{
+			return;
+		}
+	}
+
 	m_umd.GetFreeInfo( &m_uMaxFreeBlock , &m_uFreeLbaCount , &m_uFreeBlockCount );
-	UpDataGUI();
+	UpDataGUI(bNewThread);
 }
 
-void CWQSG_UMDDlg::UpDataGUI()
+DWORD WINAPI UpDataGUIProc(LPVOID lParam)
 {
-	m_cFileList.DeleteAllItems();
-	m_strInfo = L"";
+	SThreadData *pData = (SThreadData *)lParam;
+	if (!pData) return 0;
+
+	CWQSG_UMDDlg *pDlg = pData->pDlg;
+
+	pDlg->m_cFileList.DeleteAllItems();
+	pDlg->m_strInfo = L"";
 #if 1
 	SIsoFileFind* handle;
-	if( m_umd.IsOpen() && (handle = m_umd.FindIsoFile( m_path )) )
+	std::vector<SFileData> vecFiles;
+
+	if( pDlg->m_umd.IsOpen() && (handle = pDlg->m_umd.FindIsoFile( pDlg->m_path )) )
 	{
 		u32 uFile = 0;
 		u32 uDir = 0;
 		SIsoFileData data;
-		while( m_umd.FindNextIsoFile( handle , data ) )
+		while( pDlg->m_umd.FindNextIsoFile( handle , data ) )
 		{
-			CString str;
-			str = data.name;
-			const int index = m_cFileList.InsertItem( m_cFileList.GetItemCount() , str , ((data.isDir)?0:1) );
-			if( index >= 0 )
+			SFileData sfd;
+			sfd.bDir = data.isDir;
+			sfd.szName = data.name;
+			if (data.isDir)
 			{
-				if( data.isDir )
+				sfd.lba = 0;
+				sfd.size = 0;
+			} else {
+				sfd.lba = data.lba;
+				sfd.size = data.size;
+			}
+			vecFiles.push_back(sfd);
+		}
+
+		pDlg->m_umd.CloseFindIsoFile( handle );
+
+		pDlg->m_cFileList.SetRedraw(FALSE);
+
+		for (unsigned long i = 0; i < vecFiles.size(); i++)
+		{
+			if( vecFiles[i].bDir )
+			{
+				const int index = pDlg->m_cFileList.InsertItem(pDlg->m_cFileList.GetItemCount(), vecFiles[i].szName , ((vecFiles[i].bDir)?0:1) );
+				if( index >= 0 )
 				{
 					uDir++;
-
-					m_cFileList.SetItemData( index , 0 );
+					pDlg->m_cFileList.SetItemData( index , 0 );
 				}
-				else
+			}
+		}
+
+		for (unsigned long i = 0; i < vecFiles.size(); i++)
+		{
+			if( !vecFiles[i].bDir )
+			{
+				const int index = pDlg->m_cFileList.InsertItem(pDlg->m_cFileList.GetItemCount(), vecFiles[i].szName , ((vecFiles[i].bDir)?0:1) );
+				if( index >= 0 )
 				{
 					uFile++;
 
 					CString tmp;
 
-					tmp.Format( L"%d" , data.lba );
-					m_cFileList.SetItemText( index , 1 , tmp );
+					tmp.Format( L"%d" , vecFiles[i].lba );
+					pDlg->m_cFileList.SetItemText( index , 1 , tmp );
 
-					tmp.Format( L"%d" , data.size );
-					m_cFileList.SetItemText( index , 2 , tmp );
+					tmp.Format( L"%d" , vecFiles[i].size );
+					pDlg->m_cFileList.SetItemText( index , 2 , tmp );
 
-					m_cFileList.SetItemData( index , 1 );
+					pDlg->m_cFileList.SetItemData( index , 1 );
 				}
 			}
 		}
-		m_umd.CloseFindIsoFile( handle );
 
-		m_strInfo.Format( m_StringMgr.GetString(13) ,
-			uDir , uFile , m_umd.GetMaxLbaCount() , m_uFreeLbaCount , m_uFreeBlockCount , m_uMaxFreeBlock );
+		pDlg->m_cFileList.SetRedraw(TRUE);
 
-		m_pathW = m_path;
+		pDlg->m_strInfo.Format( pDlg->m_StringMgr.GetString(13) ,
+			uDir , uFile , pDlg->m_umd.GetMaxLbaCount() , pDlg->m_uFreeLbaCount , pDlg->m_uFreeBlockCount , pDlg->m_uMaxFreeBlock );
+
+		pDlg->m_pathW = pDlg->m_path;
 	}
-	UpdateData( FALSE );
+
+	pDlg->PostMessage(WM_WQSG_UPDATE, FALSE);
+	//pDlg->m_cFileList.SetFocus();
 #endif
+
+	//pDlg->UpDataLbaData(false);
+	pDlg->WorkingFinish();
+	delete pData;
+
+	return 0;
+}
+
+void CWQSG_UMDDlg::UpDataGUI(bool bNewThread)
+{
+	if (bNewThread)
+	{
+		if (IsWorking())
+		{
+			return;
+		}
+
+		SThreadData *pData = new SThreadData;
+		pData->pDlg = this;
+
+		WorkingStart();
+		::CloseHandle(
+			::CreateThread(NULL, 0, UpDataGUIProc, (LPVOID)pData, NULL, NULL));
+	} else {
+		SThreadData *pData = new SThreadData;
+		pData->pDlg = this;
+
+		UpDataGUIProc((LPVOID)pData);
+	}
 }
 
 void CWQSG_UMDDlg::OnBnClickedButton1()
 {
-	static CWQSGFileDialog_Open dlg( L"*.ISO|*.iso||" );
+	if (IsWorking())
+	{
+		return;
+	}
+
+	static CWQSGFileDialog_Open dlg( L"镜像文件(*.iso)|*.iso||" );
 
 	CString name;
 #if _DEBUG && 0
@@ -361,6 +488,11 @@ void CWQSG_UMDDlg::OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult)
 	// TODO: 在此添加控件通知处理程序代码
 	*pResult = 0;
 
+	if (IsWorking())
+	{
+		return;
+	}
+
 	if( 0 != m_cFileList.GetItemData( pNMIA->iItem ) )
 		return;
 
@@ -377,6 +509,37 @@ void CWQSG_UMDDlg::OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult)
 	UpDataGUI();
 }
 
+
+DWORD WINAPI ImportFileProc(LPVOID lParam)
+{
+	SThreadData *pData = (SThreadData *)lParam;
+	if (!pData) return 0;
+	CWQSG_UMDDlg *pDlg = pData->pDlg;
+
+	BOOL bFileBreak;
+	for(unsigned long i = 0; i < pData->vecData.size() ; i++)
+	{
+		if( !pDlg->m_umd.EasyImport( bFileBreak , pData->vecData[i].c_str() , pData->szData1.c_str() ) )
+		{
+			if( bFileBreak )
+				pDlg->CloseISO();
+
+			pDlg->MsgBoxError( pDlg->m_umd.GetErrStr() );
+			pDlg->m_umd.CleanErrStr();
+			break;
+		}
+	}
+
+	pDlg->m_umd.Flush();
+	pDlg->UpDataLbaData(false);
+	pDlg->WorkingFinish();
+	delete pData;
+
+	return 0;
+}
+
+
+
 BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: 在此添加专用代码和/或调用基类
@@ -385,30 +548,32 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 		const HDROP hDrop = (HDROP)pMsg->wParam;
 		if( pMsg->hwnd == m_cFileList.m_hWnd )
 		{
-			if( m_umd.IsCanWrite() )
+			if(m_umd.IsCanWrite() && !IsWorking())
 			{
 				WCHAR strPathName[MAX_PATH*2];
 
 				const int fileCount = DragQueryFile( hDrop , (UINT)-1 , NULL , 0 );
-
-				for( int i = 0 ; (i>=0) && (i<fileCount) && ( DragQueryFile( hDrop , i , strPathName , MAX_PATH*2 ) != (UINT)-1 ) ; ++i )
+				if (fileCount > 0)
 				{
-					BOOL bFileBreak;
-					if( !m_umd.EasyImport( bFileBreak , strPathName , m_path ) )
-					{
-						if( bFileBreak )
-							CloseISO();
+					SThreadData *pData = new SThreadData;
 
-						MessageBox( m_umd.GetErrStr() );
-						m_umd.CleanErrStr();
-						break;
+					for( int i = 0 ; (i>=0) && (i<fileCount) && ( DragQueryFile( hDrop , i , strPathName , MAX_PATH*2 ) != (UINT)-1 ) ; ++i )
+					{
+						pData->vecData.push_back(strPathName);
 					}
+
+					pData->szData1 = m_path;
+					WorkingStart();
+					::CloseHandle(
+						::CreateThread(NULL, 0, ImportFileProc, (LPVOID)pData, NULL, NULL));
 				}
-				m_umd.Flush();
-				UpDataLbaData();
 			}
 		}
 		DragFinish( hDrop );
+	} else if( WM_TIMER == pMsg->message && pMsg->wParam == WQSG_PROCESS){
+		m_cProcess.StepIt();
+	} else if (WM_WQSG_UPDATE == pMsg->message){
+		UpdateData(pMsg->wParam);
 	}
 
 	return CDialog::PreTranslateMessage(pMsg);
@@ -417,6 +582,11 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 void CWQSG_UMDDlg::OnBnClickedButtonUp()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	if (IsWorking())
+	{
+		return;
+	}
+
 	CStringA path( m_path );
 	int pos = path.ReverseFind( L'/' );
 	if( pos >= 0 )
@@ -442,92 +612,273 @@ void CWQSG_UMDDlg::OnNMRClickListFile(NMHDR *pNMHDR, LRESULT *pResult)
 		CMenu*const sub = m_menu.GetSubMenu( m_umd.IsCanWrite()?((count==1)?0:1):2 );
 		if( sub )
 			sub->TrackPopupMenu( TPM_LEFTALIGN /*|TPM_RIGHTBUTTON*/ , pos.x , pos.y , this );
+	} else {
+		if (m_umd.IsCanWrite())
+		{
+			CMenu*const sub = m_menu.GetSubMenu(3);
+			if( sub )
+				sub->TrackPopupMenu( TPM_LEFTALIGN /*|TPM_RIGHTBUTTON*/ , pos.x , pos.y , this );
+		}
 	}
 }
 
-
-void CWQSG_UMDDlg::OnExportFiles()
+DWORD WINAPI ExportFileProc(LPVOID lParam)
 {
+	SThreadData *pData = (SThreadData *)lParam;
+	if (!pData) return 0;
+	CWQSG_UMDDlg *pDlg = pData->pDlg;
+
 	// TODO: 在此添加命令处理程序代码
-	CWQSG_DirDlg dlg( m_hWnd , m_StringMgr.GetString(20) , m_LastSelDir.GetString() );
-	WCHAR outPath[MAX_PATH*2];
-	if( !dlg.GetPath( outPath ) )
-		return ;
 
-	m_LastSelDir = outPath ;
-	if( m_LastSelDir.Right( 1 ) != L'\\' )
-		m_LastSelDir += L'\\';
-
-	POSITION pos = m_cFileList.GetFirstSelectedItemPosition();
+	POSITION pos = pDlg->m_cFileList.GetFirstSelectedItemPosition();
 	int index = 0;
-	while( (index = m_cFileList.GetNextSelectedItem( pos )) >= 0 )
+	CStringA path = pDlg->m_path;
+	if (path.Right(1) != '/')
+		path.Append("/");
+	while( (index = pDlg->m_cFileList.GetNextSelectedItem( pos )) >= 0 )
 	{
-		CString str( m_cFileList.GetItemText( index , 0 ) );
+		CString str( pDlg->m_cFileList.GetItemText( index , 0 ) );
 		CStringA strA;	strA = str;
 
 		SIsoFileData data;
-		if( !m_umd.GetFileData( data , m_path , strA ) )
+		if( !pDlg->m_umd.GetFileData( data , pDlg->m_path , strA ) )
 		{
-			MessageBox( m_umd.GetErrStr() );
-			m_umd.CleanErrStr();
+			pDlg->MsgBoxError( pDlg->m_umd.GetErrStr() );
+			pDlg->m_umd.CleanErrStr();
 			break;
 		}
 
 		if( data.isDir )
 		{
-			if( !m_umd.ExportDir( m_LastSelDir + str , m_path + strA ) )
+			if( !pDlg->m_umd.ExportDir( pDlg->m_LastSelDir + str , path + strA ) )
 			{
-				MessageBox( m_umd.GetErrStr() );
-				m_umd.CleanErrStr();
+				pDlg->MsgBoxError( pDlg->m_umd.GetErrStr() );
+				pDlg->m_umd.CleanErrStr();
 				break;
 			}
 		}
 		else
 		{
-			if( !m_umd.ExportFile( m_LastSelDir + str , m_path , strA ) )
+			if( !pDlg->m_umd.ExportFile( pDlg->m_LastSelDir + str , pDlg->m_path , strA ) )
 			{
-				MessageBox( m_umd.GetErrStr() );
-				m_umd.CleanErrStr();
+				pDlg->MsgBoxError( pDlg->m_umd.GetErrStr() );
+				pDlg->m_umd.CleanErrStr();
 				break;
 			}
 		}
 	}
-	UpDataLbaData();
+
+	pDlg->UpDataLbaData(false);
+	pDlg->WorkingFinish();
+	delete pData;
+
+	return 0;
 }
 
-void CWQSG_UMDDlg::OnReplaceFile()
+
+void CWQSG_UMDDlg::OnExportFiles()
 {
-	// TODO: 在此添加命令处理程序代码
+	if (IsWorking())
+	{
+		return;
+	}
+
+	if (m_cFileList.GetSelectedCount() > 0)
+	{
+		CWQSG_DirDlg dlg( m_hWnd , m_StringMgr.GetString(20) , m_LastSelDir.GetString() );
+		WCHAR outPath[MAX_PATH*2];
+		if( !dlg.GetPath( outPath ) )
+			return;
+
+		m_LastSelDir = outPath ;
+		if( m_LastSelDir.Right( 1 ) != L'\\' )
+			m_LastSelDir += L'\\';
+
+		SThreadData *pData = new SThreadData;
+		pData->pDlg = this;
+		pData->szWideData1 = m_LastSelDir;
+
+		WorkingStart();
+		::CloseHandle(
+			::CreateThread(NULL, 0, ExportFileProc, (LPVOID)pData, NULL, NULL));
+	}
+}
+
+DWORD WINAPI ReplaceFileProc(LPVOID lParam)
+{
+	SThreadData *pData = (SThreadData *)lParam;
+	if (!pData) return 0;
+	CWQSG_UMDDlg *pDlg = pData->pDlg;
+
+	BOOL bFileBreak;
+	if( !pDlg->m_umd.ImportFile( bFileBreak , pDlg->m_path , pData->szData1.c_str() , pData->szWideData1.c_str() ) )
+	{
+		if( bFileBreak )
+			pDlg->CloseISO();
+		pDlg->MessageBox( pData->pDlg->m_umd.GetErrStr() );
+		pDlg->m_umd.CleanErrStr();
+	}
+	pDlg->m_umd.Flush();
+	
+	pDlg->UpDataLbaData(false);
+	pDlg->WorkingFinish();
+	delete pData;
+
+	return 0;
+}
+
+DWORD WINAPI CreateDirProc(LPVOID lParam)
+{
+	SThreadData *pData = (SThreadData *)lParam;
+	if (!pData) return 0;
+	CWQSG_UMDDlg *pDlg = pData->pDlg;
+
+	BOOL bFileBreak;
+	if( !pDlg->m_umd.CreateDir( bFileBreak , pData->szData1.c_str(), pDlg->m_path) )
+	{
+		if( bFileBreak )
+			pDlg->CloseISO();
+		pDlg->MessageBox( pData->pDlg->m_umd.GetErrStr() );
+		pDlg->m_umd.CleanErrStr();
+	} else {
+		CStringA strPath = pDlg->m_path;
+		if (strPath.Right(1) != '/')
+			strPath.Append("/");
+
+		if( !pDlg->m_umd.ImportDir( bFileBreak , strPath + pData->szData1.c_str() , pData->szWideData1.c_str() ) )
+		{
+			if( bFileBreak )
+				pDlg->CloseISO();
+			pDlg->MessageBox( pData->pDlg->m_umd.GetErrStr() );
+			pDlg->m_umd.CleanErrStr();
+		}
+	}
+
+	pDlg->m_umd.Flush();
+	
+	pDlg->UpDataLbaData(false);
+	pDlg->WorkingFinish();
+	delete pData;
+
+	return 0;
+}
+
+void CWQSG_UMDDlg::OnCreateDir()
+{
+	if (IsWorking())
+	{
+		return;
+	}
 	if( !m_umd.IsCanWrite() )
 	{
 		MessageBox( m_StringMgr.GetString(14) );
 		return;
 	}
 
+	CWQSG_DirDlg dlg( m_hWnd , _T("选择导入文件夹") , m_LastSelDir.GetString() );
+	WCHAR outPath[MAX_PATH*2];
+	if(!dlg.GetPath( outPath ))
+		return;
+	CStringA strName;
+	for (int i = lstrlenW(outPath) - 1; i > 0; i--)
+	{
+		if (outPath[i] == '\\' || outPath[i + 1] == '/')
+		{
+			strName = outPath + i + 1;
+			break;
+		}
+	}
+	SThreadData *pData = new SThreadData;
+	pData->pDlg = this;
+	pData->szData1 = (LPCSTR)strName.GetString();
+	pData->szWideData1 = outPath;
+
+	WorkingStart();
+	::CloseHandle(
+		::CreateThread(NULL, 0, CreateDirProc, (LPVOID)pData, NULL, NULL));
+}
+
+void CWQSG_UMDDlg::OnAddFile()
+{
+	if (IsWorking())
+	{
+		return;
+	}
+
+	if( !m_umd.IsCanWrite() )
+	{
+		MessageBox( m_StringMgr.GetString(14) );
+		return;
+	}
+
+	static ::CWQSGFileDialog_Open dlg( L"所有文件(*.*)|*.*||" );
+	dlg.SetWindowTitle( m_StringMgr.GetString(21) );
+	if( IDOK != dlg.DoModal() )
+		return;
+	TCHAR strName[512];
+	lstrcpy(strName, dlg.GetPathName());
+	CStringA strA;
+	for (int i = lstrlen(strName) - 1; i > 0; i--)
+	{
+		if (strName[i] == '\\' || strName[i] == '/')
+		{
+			strA = strName + i + 1;
+			break;
+		}
+	}
+
+	if (strA.GetLength() > 0)
+	{
+		SThreadData *pData = new SThreadData;
+		pData->pDlg = this;
+		pData->szData1 = (LPCSTR)strA.GetString();
+		pData->szWideData1 = dlg.GetPathName();
+
+		WorkingStart();
+		::CloseHandle(
+			::CreateThread(NULL, 0, ReplaceFileProc, (LPVOID)pData, NULL, NULL));
+	}
+}
+
+void CWQSG_UMDDlg::OnReplaceFile()
+{
+	// TODO: 在此添加命令处理程序代码
+	if (IsWorking())
+	{
+		return;
+	}
+
+	if( !m_umd.IsCanWrite() )
+	{
+		MessageBox( m_StringMgr.GetString(14) );
+		return;
+	}
+
+
 	POSITION pos = m_cFileList.GetFirstSelectedItemPosition();
 	const int index = m_cFileList.GetNextSelectedItem( pos );
 	if( index >= 0 )
 	{
-		CString str ( m_cFileList.GetItemText( index , 0 ) );
-		CStringA strA; strA = str;
+		CString str(m_cFileList.GetItemText( index , 0 ) );
 
-		static ::CWQSGFileDialog_Open dlg( L"*.*|*.*||" );
+		static ::CWQSGFileDialog_Open dlg( L"所有文件(*.*)|*.*||" );
 		dlg.SetWindowTitle( m_StringMgr.GetString(21) );
-
+		CStringA strA;
+		strA = str;
 		if( IDOK != dlg.DoModal() )
 			return;
 
-		BOOL bFileBreak;
-		if( !m_umd.ImportFile( bFileBreak , m_path , strA , dlg.GetPathName() ) )
-		{
-			if( bFileBreak )
-				CloseISO();
-			MessageBox( m_umd.GetErrStr() );
-			m_umd.CleanErrStr();
-		}
-		m_umd.Flush();
-		UpDataLbaData();
+		SThreadData *pData = new SThreadData;
+		pData->pDlg = this;
+		pData->szData1 = (LPCSTR)strA.GetString();
+		pData->szWideData1 = dlg.GetPathName();
+
+		WorkingStart();
+		::CloseHandle(
+			::CreateThread(NULL, 0, ReplaceFileProc, (LPVOID)pData, NULL, NULL));
+		//ReplaceFileProc((LPVOID)pData);
 	}
+
 }
 
 void CWQSG_UMDDlg::OnPopMenu(UINT a_nID )
@@ -544,54 +895,88 @@ void CWQSG_UMDDlg::OnPopMenu(UINT a_nID )
 }
 
 #include "InputBox.h"
+DWORD WINAPI WriteFileProc(LPVOID lParam)
+{
+	SThreadData *pData = (SThreadData *)lParam;
+	if (!pData) return 0;
+	CWQSG_UMDDlg *pDlg = pData->pDlg;
+
+	POSITION pos = pDlg->m_cFileList.GetFirstSelectedItemPosition();
+	const int index = pDlg->m_cFileList.GetNextSelectedItem( pos );
+	bool bWorked = false;
+	if( index >= 0 )
+	{
+		
+		CString name( pDlg->m_cFileList.GetItemText( index , 0 ) );
+		CStringA nameA;	nameA = name;
+
+		SIsoFileData data;
+		if( !pDlg->m_umd.GetFileData( data , pDlg->m_path , nameA ) )
+		{
+			pDlg->MsgBoxError( pDlg->m_umd.GetErrStr() );
+			pDlg->m_umd.CleanErrStr();
+			goto exit_l;
+		}
+
+		static CWQSGFileDialog_Open dlg( L"所有文件(*.*)|*.*||" );
+		dlg.SetWindowTitle( L"选择要导入的文件…" );
+
+		if( IDOK != dlg.DoModal() )
+			goto exit_l;
+
+		CInputBox ibox( L"相对于文件的偏移" , L"输入相对于文件的偏移" , pDlg->m_oldOffset , data.size );
+		if( IDOK != ibox.DoModal() )
+			goto exit_l;
+
+		pDlg->m_oldOffset = ibox.GetVal();
+
+		BOOL bFileBreak;
+		if( !pDlg->m_umd.WriteFile( bFileBreak , pDlg->m_path , nameA , pDlg->m_oldOffset , dlg.GetPathName() ) )
+		{
+			if( bFileBreak )
+				pDlg->CloseISO();
+
+			pDlg->MsgBoxError( pDlg->m_umd.GetErrStr() );
+			pDlg->m_umd.CleanErrStr();
+		}
+
+		pDlg->m_umd.Flush();
+		bWorked = true;
+	}
+
+exit_l:
+	if (bWorked)
+	{
+		pDlg->UpDataLbaData(false);
+	}
+	pDlg->WorkingFinish();
+	delete pData;
+
+
+	return 0;
+}
+
 void CWQSG_UMDDlg::OnWriteFile()
 {
 	// TODO: 在此添加命令处理程序代码
+	if (IsWorking())
+	{
+		return;
+	}
 	if( !m_umd.IsCanWrite() )
 	{
 		MessageBox( m_StringMgr.GetString(14) );
 		return;
 	}
 
-	POSITION pos = m_cFileList.GetFirstSelectedItemPosition();
-	const int index = m_cFileList.GetNextSelectedItem( pos );
-	if( index >= 0 )
+	if (m_cFileList.GetSelectedCount() > 0)
 	{
-		CString name( m_cFileList.GetItemText( index , 0 ) );
-		CStringA nameA;	nameA = name;
+		SThreadData *pData = new SThreadData;
+		pData->pDlg = this;
 
-		SIsoFileData data;
-		if( !m_umd.GetFileData( data , m_path , nameA ) )
-		{
-			MessageBox( m_umd.GetErrStr() );
-			m_umd.CleanErrStr();
-			return ;
-		}
-
-		static CWQSGFileDialog_Open dlg( L"*.*|*.*||" );
-		dlg.SetWindowTitle( L"选择要导入的文件..." );
-
-		if( IDOK != dlg.DoModal() )
-			return;
-
-		CInputBox ibox( L"相对于文件的偏移" , L"输入相对于文件的偏移" , m_oldOffset , data.size );
-		if( IDOK != ibox.DoModal() )
-			return ;
-
-		m_oldOffset = ibox.GetVal();
-
-		BOOL bFileBreak;
-		if( !m_umd.WriteFile( bFileBreak , m_path , nameA , m_oldOffset , dlg.GetPathName() ) )
-		{
-			if( bFileBreak )
-				CloseISO();
-
-			MessageBox( m_umd.GetErrStr() );
-			m_umd.CleanErrStr();
-		}
-
-		m_umd.Flush();
-		UpDataLbaData();
+		WorkingStart();
+		::CloseHandle(
+			::CreateThread(NULL, 0, WriteFileProc, (LPVOID)pData, NULL, NULL));
 	}
 }
 
@@ -610,15 +995,24 @@ void CWQSG_UMDDlg::OnBnClickedButtonAbout()
 	CString strAuthor2;
 	strAuthor2.LoadString( IDS_APP_AUTHOR2 );
 
-	WQSG_About( m_hIcon , m_hWnd , m_StringMgr.GetString(10) , strAppName + L"\r\nv" + strAppVer ,
+	CString strSVN;
+	strSVN.LoadString( IDS_APP_SVN );
+	
+	WQSG_About( m_hIcon , m_hWnd , m_StringMgr.GetString(10) , strAppName + L"\r\n " + strSVN + L" v" + strAppVer ,
 		CStringW(m_StringMgr.GetString(15)) + L" : <A HREF=\"http://code.google.com/p/wqsg-umd\">http://code.google.com/p/wqsg-umd</A>\r\n"
-		+ CStringW(m_StringMgr.GetString(16)) + L" : <A HREF=\"http://code.google.com/p/wqsglib\">http://code.google.com/p/wqsglib</A>\r\n                 <A HREF=\"http://wqsg.ys168.com\">http://wqsg.ys168.com</A>\r\n" ,
-		strAuthor2 + L"(" + strAuthor1 + L")" + L"\r\nKid" );
+		+ CStringW(m_StringMgr.GetString(16)) + L" : <A HREF=\"http://code.google.com/p/wqsglib\">http://code.google.com/p/wqsglib</A>\r\n"
+								L"                 <A HREF=\"http://wqsg.ys168.com\">http://wqsg.ys168.com</A>\r\n" ,
+		strAuthor2 + L"(" + strAuthor1 + L")" + L"\r\nKid\r\n\r\nModify by 腾袭");
 }
 
 void CWQSG_UMDDlg::OnBnClickedButtonExpand_ISO()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	if (IsWorking())
+	{
+		return;
+	}
+
 	if( !m_umd.IsCanWrite() )
 		return;
 
@@ -644,6 +1038,11 @@ void CWQSG_UMDDlg::OnBnClickedButtonExpand_ISO()
 void CWQSG_UMDDlg::OnBnClickedButtonApply_WIFP()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	if (IsWorking())
+	{
+		return;
+	}
+
 	UpdateData();
 
 	if( !m_umd.IsOpen() )
@@ -688,12 +1087,17 @@ void CWQSG_UMDDlg::OnBnClickedButtonApply_WIFP()
 void CWQSG_UMDDlg::OnBnClickedButtonCreate_WIFP()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	if (IsWorking())
+	{
+		return;
+	}
+
 	UpdateData();
 
 	if( !m_umd.IsOpen() )
 		return;
 
-	static CWQSGFileDialog_Open dlg_iso( L"*.iso|*.iso||" );
+	static CWQSGFileDialog_Open dlg_iso( L"镜像文件(*.iso)|*.iso||" );
 	dlg_iso.SetWindowTitle( L"选择原版ISO..." );
 
 	if( dlg_iso.DoModal() != IDOK )
@@ -783,8 +1187,9 @@ void CWQSG_UMDDlg::SetTitle(BOOL* a_bCanWrite)
 	CString str1,str2,str3;
 	str1.LoadString( IDS_APP_NAME );
 	str2.LoadString( IDS_APP_VER );
+	str3.LoadString( IDS_APP_SVN );
 
-	CString strTitle( str1 + L" v" + str2 ); 
+	CString strTitle( str1 + L" " + str3 + L" v" + str2 ); 
 	if( a_bCanWrite )
 	{
 		strTitle += L" ";
@@ -853,6 +1258,9 @@ bool CWQSG_UMDDlg::LoadLang( const CString& a_strFile , SLang& a_Lang )
 
 		CString strIndex = line.Left( pos );
 		CString strLang = line.Mid( pos + 1 );
+
+		strLang.Replace(L"\\r\\n", L"\r\n");
+		strLang.Replace(L"\\\"", L"\"");
 
 		const int iIndex = _wtoi( strIndex.GetString() );
 		if( iIndex <= 0 )
@@ -968,4 +1376,25 @@ void CWQSG_UMDDlg::UseLang( LCID a_lcid )
 	SetDlgItemTextW( IDC_BUTTON_Create_WIFP , m_StringMgr.GetString(8) );
 	SetDlgItemTextW( IDC_BUTTON_Expand_ISO , m_StringMgr.GetString(9) );
 	SetDlgItemTextW( IDC_BUTTON_About , m_StringMgr.GetString(10) );
+	SetDlgItemTextW( IDC_BUTTON_UP , m_StringMgr.GetString(22) );
+	
+	if (m_StringMgr.GetString(23))
+		WQSG_FileList[0].name = m_StringMgr.GetString(23);
+	if (m_StringMgr.GetString(24))
+		WQSG_FileList[1].name = m_StringMgr.GetString(24);
+	if (m_StringMgr.GetString(25))
+		WQSG_FileList[2].name = m_StringMgr.GetString(25);
+}
+
+
+bool CWQSG_UMDDlg::IsWorking()
+{
+	bool b_ret = m_bWorking;
+	if (m_bWorking)
+	{
+		MessageBox(L"当前有任务进行中，请稍后。", L"提示", MB_OK | MB_ICONINFORMATION);
+	}
+
+	//防止在消息框的时间里任务结束又启动一个任务
+	return b_ret;
 }

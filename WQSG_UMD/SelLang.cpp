@@ -69,7 +69,7 @@ BOOL CSelLang::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// TODO:  在此添加额外的初始化
-	m_cList.SetExtendedStyle( m_cList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
+	//m_cList.SetExtendedStyle( m_cList.GetExtendedStyle() | LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
 	m_cList.InsertColumn( 0 , L"" , 0 , 100 );
 	m_cList.InsertColumn( 1 , L"" , 0 , 200 );
 	m_cList.InsertColumn( 2 , L"" , 0 , 50 );

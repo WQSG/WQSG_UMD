@@ -16,13 +16,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(中华人民共和国) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
-#ifdef _WIN32
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 #pragma code_page(936)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -94,19 +92,20 @@ END
 IDD_WQSG_UMD_DIALOG DIALOGEX 0, 0, 319, 214
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "WQSG_UMD v2009.04220"
+CAPTION "WQSG_UMD"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_LIST_FILE,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,63,305,106,WS_EX_ACCEPTFILES
+    CONTROL         "",IDC_LIST_FILE,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,66,305,106,WS_EX_ACCEPTFILES
     PUSHBUTTON      "打开ISO",IDC_BUTTON_OPEN,7,6,50,14
     PUSHBUTTON      "UP",IDC_BUTTON_UP,7,39,23,14
     EDITTEXT        IDC_EDIT1,30,39,282,14,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "关于本软件",IDC_BUTTON_About,262,6,50,14
-    EDITTEXT        IDC_EDIT2,7,171,305,36,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT2,7,174,305,33,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "扩容ISO",IDC_BUTTON_Expand_ISO,209,6,50,14
     PUSHBUTTON      "应用补丁",IDC_BUTTON_Apply_WIFP,62,6,50,14
     PUSHBUTTON      "创建补丁",IDC_BUTTON_Create_WIFP,62,21,50,14
     PUSHBUTTON      "Language",IDC_BUTTON_LANG,262,22,50,14
+    CONTROL         "",IDC_PROGRESS_INFO,"msctls_progress32",NOT WS_VISIBLE | WS_BORDER,7,56,305,10
 END
 
 IDD_DLG_SEL_LANG DIALOGEX 0, 0, 253, 184
@@ -126,7 +125,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -157,18 +156,27 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Bitmap
+//
+
+IDB_DOWNARROW           BITMAP                  "Control\\downarrow.bmp"
+IDB_UPARROW             BITMAP                  "Control\\uparrow.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_APP_NAME            "WQSG_UMD"
-    IDS_APP_VER             "1.0.2011.01130"
+    IDS_APP_VER             "1.0.2011.0620"
     IDS_APP_AUTHOR          "WQSG"
     IDS_APP_AUTHOR2         "恶梦的死神"
+    IDS_APP_SVN             "R46"
 END
 
-#endif    // 中文(中华人民共和国) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
