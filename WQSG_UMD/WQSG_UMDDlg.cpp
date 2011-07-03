@@ -556,6 +556,7 @@ BOOL CWQSG_UMDDlg::PreTranslateMessage(MSG* pMsg)
 				if (fileCount > 0)
 				{
 					SThreadData *pData = new SThreadData;
+					pData->pDlg = this;
 
 					for( int i = 0 ; (i>=0) && (i<fileCount) && ( DragQueryFile( hDrop , i , strPathName , MAX_PATH*2 ) != (UINT)-1 ) ; ++i )
 					{

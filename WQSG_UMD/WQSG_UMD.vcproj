@@ -319,6 +319,18 @@
 				RelativePath=".\WQSG_UMDDlg.cpp"
 				>
 			</File>
+			<Filter
+				Name="Control"
+				>
+				<File
+					RelativePath=".\Control\CListCtrl_Sortable.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Control\CListCtrl_SortItems.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="头文件"
@@ -361,6 +373,18 @@
 				RelativePath=".\WQSG_UMDDlg_Lang.h"
 				>
 			</File>
+			<Filter
+				Name="Control"
+				>
+				<File
+					RelativePath=".\Control\CListCtrl_Sortable.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Control\CListCtrl_SortItems.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="资源文件"
@@ -379,6 +403,18 @@
 				RelativePath=".\res\WQSG_UMD.rc2"
 				>
 			</File>
+			<Filter
+				Name="Control"
+				>
+				<File
+					RelativePath=".\Control\downarrow.bmp"
+					>
+				</File>
+				<File
+					RelativePath=".\Control\uparrow.bmp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="WQSG"
