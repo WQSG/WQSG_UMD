@@ -61,7 +61,7 @@ struct SFileData
 struct SThreadData
 {
 	CWQSG_UMDDlg *pDlg;
-	//std::string 在线程传递中更安全
+	//std::string 我们使用标准库
 	std::string szData1;
 	std::string szData2;
 	std::wstring szWideData1;
@@ -224,7 +224,7 @@ BOOL CWQSG_UMDDlg::OnInitDialog()
 
 		IMAGEINFO info = {0};
 		if( !CImageList::FromHandle(hi)->GetImageInfo( 0 , &info ) ||
-			!m_imageList.Create( info.rcImage.right , info.rcImage.bottom , ILC_COLOR32 | ILC_MASK, 1 , 1 ) )
+			!m_imageList.Create( info.rcImage.right - info.rcImage.left , info.rcImage.bottom - info.rcImage.top , ILC_COLOR32 | ILC_MASK, 16 , 16 ) )
 			ASSERT( FALSE );
 
 		m_imageList.SetBkColor( m_cFileList.GetBkColor() );
@@ -1000,10 +1000,10 @@ void CWQSG_UMDDlg::OnBnClickedButtonAbout()
 	strSVN.LoadString( IDS_APP_SVN );
 	
 	WQSG_About( m_hIcon , m_hWnd , m_StringMgr.GetString(10) , strAppName + L"\r\n " + strSVN + L" v" + strAppVer ,
-		CStringW(m_StringMgr.GetString(15)) + L" : <A HREF=\"http://code.google.com/p/wqsg-umd\">http://code.google.com/p/wqsg-umd</A>\r\n"
-		+ CStringW(m_StringMgr.GetString(16)) + L" : <A HREF=\"http://code.google.com/p/wqsglib\">http://code.google.com/p/wqsglib</A>\r\n"
-								L"                 <A HREF=\"http://wqsg.ys168.com\">http://wqsg.ys168.com</A>\r\n" ,
-		strAuthor2 + L"(" + strAuthor1 + L")" + L"\r\nKid\r\n\r\nModify by 腾袭");
+		CStringW(m_StringMgr.GetString(15)) + L" : <a href=\"http://code.google.com/p/wqsg-umd\">http://code.google.com/p/wqsg-umd</a>\r\n"
+		+ CStringW(m_StringMgr.GetString(16)) + L" : <a href=\"http://code.google.com/p/wqsglib\">http://code.google.com/p/wqsglib</a>\r\n"
+								L"                 <a href=\"http://wqsg.ys168.com\">http://wqsg.ys168.com</a>\r\n" ,
+		strAuthor2 + L"(" + strAuthor1 + L")" + L"\r\nKid\r\n腾袭");
 }
 
 void CWQSG_UMDDlg::OnBnClickedButtonExpand_ISO()
@@ -1052,7 +1052,8 @@ void CWQSG_UMDDlg::OnBnClickedButtonApply_WIFP()
 	if( !m_umd.IsCanWrite() )
 		return;
 
-	static CWQSGFileDialog_Open dlg( L"*.wifp|*.wifp||" );
+	static CWQSGFileDialog_Open dlg( L"补丁文件(*.wifp)|*.wifp||" );
+	dlg.SetWindowTitle( L"选择补丁文件" );
 	if( dlg.DoModal() != IDOK )
 		return;
 
@@ -1099,13 +1100,13 @@ void CWQSG_UMDDlg::OnBnClickedButtonCreate_WIFP()
 		return;
 
 	static CWQSGFileDialog_Open dlg_iso( L"镜像文件(*.iso)|*.iso||" );
-	dlg_iso.SetWindowTitle( L"选择原版ISO..." );
+	dlg_iso.SetWindowTitle( L"选择原版ISO" );
 
 	if( dlg_iso.DoModal() != IDOK )
 		return;
 
-	static CWQSGFileDialog_Save dlg_out( L"*.wifp|*.wifp||" , L"wifp" );
-	dlg_out.SetWindowTitle( L"选择原版ISO..." );
+	static CWQSGFileDialog_Save dlg_out( L"补丁文件(*.wifp)|*.wifp||" , L"wifp" );
+	dlg_out.SetWindowTitle( L"补丁文件保存为" );
 
 	if( dlg_out.DoModal() != IDOK )
 		return;
