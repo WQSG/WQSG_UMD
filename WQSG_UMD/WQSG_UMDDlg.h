@@ -92,6 +92,11 @@ public:
 		m_cProcess.ShowWindow(SW_HIDE);
 		KillTimer(WQSG_PROCESS);
 		m_cFileList.EnableWindow(TRUE);
+
+		CWnd* pWnd = GetDlgItem(IDC_BUTTON_Create_WIFP);
+		if (pWnd) pWnd->EnableWindow(TRUE);
+		pWnd = GetDlgItem(IDC_BUTTON_Apply_WIFP);
+		if (pWnd) pWnd->EnableWindow(TRUE);
 	}
 
 	void WorkingStart()
@@ -104,6 +109,11 @@ public:
 		m_cProcess.ShowWindow(SW_SHOW);
 		SetTimer(WQSG_PROCESS, 50, NULL);
 		m_cFileList.EnableWindow(FALSE);
+
+		CWnd* pWnd = GetDlgItem(IDC_BUTTON_Create_WIFP);
+		if (pWnd) pWnd->EnableWindow(FALSE);
+		pWnd = GetDlgItem(IDC_BUTTON_Apply_WIFP);
+		if (pWnd) pWnd->EnableWindow(FALSE);
 	}
 
 	int MsgBoxError(LPCWSTR lpString)
@@ -126,10 +136,10 @@ protected:
 	
 
 	// 生成的消息映射函数
-	virtual BOOL OnInitDialog();
-	afx_msg void OnPaint();
-	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
+	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	virtual void OnCancel();
 	virtual void OnOK();
@@ -151,10 +161,11 @@ public:
 	
 public:
 	afx_msg void OnClose();
-	afx_msg void OnBnClickedButton1();
-	afx_msg void OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult);
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnPaint();
+	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnBnClickedButtonUp();
+	afx_msg void OnBnClickedButtonOpen();
+	afx_msg void OnLvnItemActivateListFile(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMRClickListFile(NMHDR *pNMHDR, LRESULT *pResult);
 
 public:
@@ -178,6 +189,7 @@ public:
 	afx_msg void OnBnClickedButtonApply_WIFP();
 	afx_msg void OnBnClickedButtonCreate_WIFP();
 	afx_msg void OnBnClickedButtonLang();
+
 	void UiClose(void);
 	void UiOpenR(void);
 	void UiOpenRW(void);

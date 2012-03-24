@@ -68,6 +68,14 @@ struct SThreadData
 	std::vector<std::wstring> vecData;
 };
 
+struct SThreadWIFPData
+{
+	CWQSG_UMDDlg *pDlg;
+	std::wstring szInPath;
+	std::wstring szOutPath;
+	BOOL bCheckCrc32;
+};
+
 const SMenuData g_MenuData0[] = {
 	{ 1 , &CWQSG_UMDDlg::OnExportFiles , MF_STRING },
 	{ 0 , NULL , MF_SEPARATOR },
@@ -171,7 +179,7 @@ BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()	//}}AFX_MSG_MAP
 	ON_WM_CLOSE()
-	ON_BN_CLICKED(IDC_BUTTON_OPEN, &CWQSG_UMDDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON_OPEN, &CWQSG_UMDDlg::OnBnClickedButtonOpen)
 	ON_NOTIFY(LVN_ITEMACTIVATE, IDC_LIST_FILE, &CWQSG_UMDDlg::OnLvnItemActivateListFile)
 	ON_BN_CLICKED(IDC_BUTTON_UP, &CWQSG_UMDDlg::OnBnClickedButtonUp)
 	ON_NOTIFY(NM_RCLICK, IDC_LIST_FILE, &CWQSG_UMDDlg::OnNMRClickListFile)
@@ -460,7 +468,7 @@ void CWQSG_UMDDlg::UpDataGUI(bool bNewThread)
 	}
 }
 
-void CWQSG_UMDDlg::OnBnClickedButton1()
+void CWQSG_UMDDlg::OnBnClickedButtonOpen()
 {
 	if (IsWorking())
 	{
@@ -764,6 +772,88 @@ DWORD WINAPI CreateDirProc(LPVOID lParam)
 	return 0;
 }
 
+DWORD WINAPI CreateWIFPProc(LPVOID lParam)
+{
+	SThreadWIFPData *pData = (SThreadWIFPData *)lParam;
+	if (!pData) return 0;
+	CWQSG_UMDDlg *pDlg = pData->pDlg;
+
+	CISO_App oldIso;
+	CWQSG_File fp;
+
+	if( !oldIso.OpenISO( pData->szInPath.c_str() , FALSE , E_WIT_UMD ) )
+	{
+		pDlg->MsgBoxError(L"打开原始ISO失败！");
+		goto exit_l;
+	}
+
+	if( !fp.OpenFile( pData->szOutPath.c_str() , 4 , 3 ) )
+	{
+		pDlg->MsgBoxError(L"打开输出文件失败！");
+		goto exit_l;
+	}
+
+	if( !pDlg->m_umd.MakeFilePackage( oldIso , fp , pData->bCheckCrc32 ) )
+	{
+		CString str;
+		str.Format( L"创建补丁失败！\r\n%s" , pDlg->m_umd.GetErrStr() );
+		pDlg->m_umd.CleanErrStr();
+		pDlg->MsgBoxError(str);
+		goto exit_l;
+	}
+
+	pDlg->MsgBoxInfo(L"成功创建补丁！");
+
+exit_l:
+	pDlg->WorkingFinish();
+	delete pData;
+
+	return 0;
+}
+
+DWORD WINAPI ApplyWIFPProc(LPVOID lParam)
+{
+	SThreadWIFPData *pData = (SThreadWIFPData *)lParam;
+	if (!pData) return 0;
+	CWQSG_UMDDlg *pDlg = pData->pDlg;
+
+	CWQSG_File fp;
+	BOOL bFileBreak = FALSE;
+
+	if(!fp.OpenFile(pData->szInPath.c_str(), 1, 3))
+	{
+		pDlg->MsgBoxError(L"打开补丁文件失败！");
+		goto exit_l;
+	}
+
+	if(pDlg->m_umd.ImportFilePackage(bFileBreak, fp, TRUE))
+	{
+		pDlg->m_umd.Flush();
+		pDlg->MsgBoxInfo(L"成功应用补丁！");
+	}
+	else if(bFileBreak)
+	{
+		pDlg->CloseISO();
+		CString str;
+		str.Format( L"打补丁失败，ISO可能已损坏！\r\n\r\n失败原因:\r\n%s" , pDlg->m_umd.GetErrStr());
+		pDlg->m_umd.CleanErrStr();
+		pDlg->MsgBoxError(str);
+	}
+	else
+	{
+		CString str;
+		str.Format(L"打补丁失败！\r\n\r\n失败原因:\r\n%s" , pDlg->m_umd.GetErrStr());
+		pDlg->m_umd.CleanErrStr();
+		pDlg->MsgBoxError(str);
+	}
+
+exit_l:
+	pDlg->WorkingFinish();
+	delete pData;
+
+	return 0;
+}
+
 void CWQSG_UMDDlg::OnCreateDir()
 {
 	if (IsWorking())
@@ -1057,7 +1147,15 @@ void CWQSG_UMDDlg::OnBnClickedButtonApply_WIFP()
 	if( dlg.DoModal() != IDOK )
 		return;
 
-	CWQSG_File fp;
+	SThreadWIFPData *pData = new SThreadWIFPData;
+	pData->pDlg = this;
+	pData->szInPath = dlg.GetPathName();
+
+	WorkingStart();
+	::CloseHandle(
+		::CreateThread(NULL, 0, ApplyWIFPProc, (LPVOID)pData, NULL, NULL));
+
+	/*CWQSG_File fp;
 	if( !fp.OpenFile( dlg.GetPathName().GetString() , 1 , 3 ) )
 	{
 		return;
@@ -1083,7 +1181,7 @@ void CWQSG_UMDDlg::OnBnClickedButtonApply_WIFP()
 		str.Format( L"打补丁失败\r\n\r\n失败原因:\r\n%s" , m_umd.GetErrStr() );
 		m_umd.CleanErrStr();
 		MessageBox( str );
-	}
+	}*/
 }
 
 void CWQSG_UMDDlg::OnBnClickedButtonCreate_WIFP()
@@ -1124,7 +1222,17 @@ void CWQSG_UMDDlg::OnBnClickedButtonCreate_WIFP()
 		return;
 	}
 
-	CISO_App oldIso;
+	SThreadWIFPData *pData = new SThreadWIFPData;
+	pData->pDlg = this;
+	pData->szInPath = dlg_iso.GetPathName();
+	pData->szOutPath = dlg_out.GetPathName();
+	pData->bCheckCrc32 = bCheckCrc32;
+
+	WorkingStart();
+	::CloseHandle(
+		::CreateThread(NULL, 0, CreateWIFPProc, (LPVOID)pData, NULL, NULL));
+
+	/*CISO_App oldIso;
 	if( !oldIso.OpenISO( dlg_iso.GetPathName() , FALSE , E_WIT_UMD ) )
 	{
 		MessageBox( L"打开ISO失败" , dlg_iso.GetPathName() );
@@ -1147,7 +1255,7 @@ void CWQSG_UMDDlg::OnBnClickedButtonCreate_WIFP()
 		return;
 	}
 
-	MessageBox( L"成功创建补丁" , dlg_out.GetPathName() );
+	MessageBox( L"成功创建补丁" , dlg_out.GetPathName() );*/
 }
 
 #define DEF_EnableWindow( __def_ID , _def_Enable ) do{CWnd*pWnd = GetDlgItem(__def_ID);pWnd->EnableWindow(_def_Enable);}while(0)
