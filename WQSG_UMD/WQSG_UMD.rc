@@ -16,13 +16,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 中文(中华人民共和国) resources
+// 中文(简体，中国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
-#ifdef _WIN32
 LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 #pragma code_page(936)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -108,6 +106,7 @@ BEGIN
     PUSHBUTTON      "创建补丁",IDC_BUTTON_Create_WIFP,62,21,50,14
     PUSHBUTTON      "Language",IDC_BUTTON_LANG,262,22,50,14
     CONTROL         "",IDC_PROGRESS_INFO,"msctls_progress32",NOT WS_VISIBLE | WS_BORDER,7,56,305,10
+    PUSHBUTTON      "导出文件表",IDC_BUTTON_Export_LBA,209,22,50,14
 END
 
 IDD_DLG_SEL_LANG DIALOGEX 0, 0, 253, 184
@@ -127,7 +126,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
@@ -169,16 +168,16 @@ IDB_UPARROW             BITMAP                  "Control\\uparrow.bmp"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_APP_NAME            "WQSG_UMD"
-    IDS_APP_VER             "1.0.2012.07210"
+    IDS_APP_VER             "1.0.2012.10220"
     IDS_APP_AUTHOR          "WQSG"
     IDS_APP_AUTHOR2         "恶梦的死神"
-    IDS_APP_SVN             "R52"
+    IDS_APP_SVN             "R53"
 END
 
-#endif    // 中文(中华人民共和国) resources
+#endif    // 中文(简体，中国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

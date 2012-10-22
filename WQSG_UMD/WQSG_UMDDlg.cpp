@@ -189,6 +189,7 @@ BEGIN_MESSAGE_MAP(CWQSG_UMDDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_Create_WIFP, &CWQSG_UMDDlg::OnBnClickedButtonCreate_WIFP)
 	ON_COMMAND_RANGE( 2000 , 3000 , &CWQSG_UMDDlg::OnPopMenu)
 	ON_BN_CLICKED(IDC_BUTTON_LANG, &CWQSG_UMDDlg::OnBnClickedButtonLang)
+	ON_BN_CLICKED(IDC_BUTTON_Export_LBA, &CWQSG_UMDDlg::OnBnClickedButtonExportLba)
 END_MESSAGE_MAP()// CWQSG_UMDDlg 消息处理程序
 
 BOOL CWQSG_UMDDlg::OnInitDialog()
@@ -1266,6 +1267,7 @@ void CWQSG_UMDDlg::UiClose(void)
 	DEF_EnableWindow(IDC_BUTTON3,FALSE);
 	DEF_EnableWindow(IDC_BUTTON4,FALSE);
 	DEF_EnableWindow(IDC_BUTTON5,FALSE);
+	DEF_EnableWindow(IDC_BUTTON6,FALSE);
 
 	SetTitle( NULL );
 }
@@ -1277,6 +1279,7 @@ void CWQSG_UMDDlg::UiOpenR(void)
 	DEF_EnableWindow(IDC_BUTTON3,FALSE);
 	DEF_EnableWindow(IDC_BUTTON4,FALSE);
 	DEF_EnableWindow(IDC_BUTTON5,TRUE);
+	DEF_EnableWindow(IDC_BUTTON6,TRUE);
 	BOOL b = FALSE;
 	SetTitle( &b );
 }
@@ -1288,6 +1291,7 @@ void CWQSG_UMDDlg::UiOpenRW(void)
 	DEF_EnableWindow(IDC_BUTTON3,TRUE);
 	DEF_EnableWindow(IDC_BUTTON4,TRUE);
 	DEF_EnableWindow(IDC_BUTTON5,TRUE);
+	DEF_EnableWindow(IDC_BUTTON6,TRUE);
 	BOOL b = TRUE;
 	SetTitle( &b );
 }
@@ -1487,6 +1491,7 @@ void CWQSG_UMDDlg::UseLang( LCID a_lcid )
 	SetDlgItemTextW( IDC_BUTTON_Expand_ISO , m_StringMgr.GetString(9) );
 	SetDlgItemTextW( IDC_BUTTON_About , m_StringMgr.GetString(10) );
 	SetDlgItemTextW( IDC_BUTTON_UP , m_StringMgr.GetString(22) );
+	SetDlgItemTextW( IDC_BUTTON_Export_LBA , m_StringMgr.GetString(26) );
 	
 	if (m_StringMgr.GetString(23))
 		WQSG_FileList[0].name = m_StringMgr.GetString(23);
@@ -1507,4 +1512,34 @@ bool CWQSG_UMDDlg::IsWorking()
 
 	//防止在消息框的时间里任务结束又启动一个任务
 	return b_ret;
+}
+void CWQSG_UMDDlg::OnBnClickedButtonExportLba()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (IsWorking())
+	{
+		return;
+	}
+	static CWQSGFileDialog_Save dlg_out( L"列表文件(*.txt)|*.txt||" , L"txt" );
+	dlg_out.SetWindowTitle( L"文件列表保存为" );
+
+	if( dlg_out.DoModal() != IDOK )
+		return;
+
+	CStringW w_strListFileName=dlg_out.GetPathName();
+
+	if (PathFileExists(w_strListFileName))
+		DeleteFile(w_strListFileName);
+
+	if (PathFileExists(w_strListFileName))
+	{
+		MessageBox( m_StringMgr.GetString(27) );
+	}
+	else
+	{
+		if(m_umd.ExportList( w_strListFileName , "" )==TRUE)
+			MessageBox( m_StringMgr.GetString(28) );
+		else
+			MessageBox( m_StringMgr.GetString(29) );
+	}
 }

@@ -76,14 +76,10 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" />
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\Code\PSP\wqsglib;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\Code\PSP\wqsglib;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Remote Debugger|Win32'">D:\Code\PSP\wqsglib;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">D:\Code\PSP\wqsglib;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\Code\PSP\wqsglib;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\Code\PSP\wqsglib;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Remote Debugger|Win32'">D:\Code\PSP\wqsglib;$(LibraryPath)</LibraryPath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">D:\Code\PSP\wqsglib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\wqsglib;.\..\..\wqsglib;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\wqsglib;.\..\..\wqsglib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\wqsglib;.\..\..\wqsglib;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\wqsglib;.\..\..\wqsglib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -93,7 +89,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(WQSG);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\..\wqsglib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -123,7 +119,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(WQSG);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\..\wqsglib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -131,6 +127,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <StringPooling>true</StringPooling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -181,8 +179,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="consolecommand.cpp" />
-    <ClCompile Include="Control\CListCtrl_Sortable.cpp" />
-    <ClCompile Include="Control\CListCtrl_SortItems.cpp" />
     <ClCompile Include="InputBox.cpp" />
     <ClCompile Include="SelLang.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -192,11 +188,11 @@
     </ClCompile>
     <ClCompile Include="WQSG_UMD_APP.cpp" />
     <ClCompile Include="WQSG_UMDDlg.cpp" />
+    <ClCompile Include="Control\CListCtrl_Sortable.cpp" />
+    <ClCompile Include="Control\CListCtrl_SortItems.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="consolecommand.h" />
-    <ClInclude Include="Control\CListCtrl_Sortable.h" />
-    <ClInclude Include="Control\CListCtrl_SortItems.h" />
     <ClInclude Include="InputBox.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SelLang.h" />
@@ -205,12 +201,14 @@
     <ClInclude Include="WQSG_UMD_APP.h" />
     <ClInclude Include="WQSG_UMDDlg.h" />
     <ClInclude Include="WQSG_UMDDlg_Lang.h" />
+    <ClInclude Include="Control\CListCtrl_Sortable.h" />
+    <ClInclude Include="Control\CListCtrl_SortItems.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Control\downarrow.bmp" />
-    <None Include="Control\uparrow.bmp" />
     <None Include="res\IconGood.ico" />
     <None Include="res\WQSG_UMD.rc2" />
+    <None Include="Control\downarrow.bmp" />
+    <None Include="Control\uparrow.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WQSG_UMD.rc" />

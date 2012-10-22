@@ -198,4 +198,5 @@ public:
 	void UseLang( LCID a_lcid );
 
 	BOOL InitPopMenu( CMenu& a_Menu , const SMenuData* a_pMenuData , size_t a_Count , WORD a_Id );
+	afx_msg void OnBnClickedButtonExportLba();
 };

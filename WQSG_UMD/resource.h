@@ -34,6 +34,8 @@
 #define IDC_BUTTON_Create_WIFP          1013
 #define IDC_LIST1                       1014
 #define IDC_PROGRESS_INFO               1015
+#define IDC_BUTTON6                     1016
+#define IDC_BUTTON_Export_LBA           1016
 #define ID_32771                        32771
 #define ID_32773                        32773
 #define ID_32772_REFILE                 32778
@@ -45,7 +47,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        138
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1016
+#define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

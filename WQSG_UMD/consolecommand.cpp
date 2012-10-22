@@ -14,6 +14,7 @@
 		--importdir		导入的目的文件夹
 		--quiet			不显示输出
 		--log			输出写到文件
+		--list			导出文件表
 */
 
 #include "stdafx.h"
@@ -29,6 +30,7 @@ bool quiet = false;
 static const wchar_t * logfilename = _T("wqsg_umd_log.txt");
 static FILE * logfile;
 static CStringW file;
+static CStringW list;
 static CStringW iso;
 static CStringW importDir;
 
@@ -145,10 +147,11 @@ void PrintHelp()
 	InitConsole();
 	dprint(_T("WQSG_UMD Console Command Mode\n"));
 	dprint(_T("Add by kid\t2009.2.15\n\n"));
-	dprint(_T("WQSG_UMD.exe <--iso=a.iso> <--file=file|dir> [--importdir=pspdir] [--quiet] [--log]\n"));
+	dprint(_T("WQSG_UMD.exe <--iso=a.iso> <--file=file|dir> <--list=filelist> [--importdir=pspdir] [--quiet] [--log]\n"));
 	dprint(_T("example:\n"));
 	dprint(_T("    WQSG_UMD.exe --iso=c:\\umd0001.iso --file=.\\EBOOT.BIN --importdir=PSP_GAME/SYSDIR --log\n"));
 	dprint(_T("    WQSG_UMD.exe --iso=umd0002.iso --file=.\\PSP_GAME --log --quiet\n"));
+	dprint(_T("    WQSG_UMD.exe --iso=umd0003.iso --list=.\\filelist.txt \n"));
 
 	CloseConsole();
 	ExitProcess(0);
@@ -189,6 +192,10 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 		{
 			PrintHelp();
 		}
+		else if (!StrCmpNI(szArglist[i], _T("--list="), STRLEN("--list=")))
+		{
+			list.Format(_T("%s"),szArglist[i] + STRLEN("--list="));
+		}
 		else
 		{
 			parseOK = false;
@@ -199,7 +206,7 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 	}
 
 	InitConsole();
-	if (parseOK && !file.IsEmpty() && !iso.IsEmpty())
+	if (parseOK && !(file.IsEmpty()&&list.IsEmpty()) && !iso.IsEmpty())
 	{
 		CISO_App m_umd;
 		BOOL bFileBreak;
@@ -208,14 +215,43 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 			parseOK = false;
 			dprint(_T("Open iso file %s error.\n"), iso);
 		}
-		else if (!m_umd.EasyImport( bFileBreak , file, importDir.IsEmpty() ? "" : CW2A(importDir.GetString()) ))
-		{
-			parseOK = false;
-			dprint(_T("Import error: %s\n"), m_umd.GetErrStr());
-		}
 		else
 		{
-			dprint(_T("Import ok.\n"));
+			if (!list.IsEmpty())
+			{
+				if (quiet)
+				{
+					if (PathFileExists(list))
+						DeleteFile(list);
+				}
+				if (PathFileExists(list))
+				{
+					dprint(_T("List file exists, export aborted.\n"));
+				}
+				else
+				{
+					if (m_umd.ExportList(list,""))
+					{
+						dprint(_T("Export ok.\n"));
+					}
+					else
+					{
+						dprint(_T("Export failed.\n"));
+					}
+				}
+			}
+			if (!file.IsEmpty())
+			{
+				if (!m_umd.EasyImport( bFileBreak , file, importDir.IsEmpty() ? "" : CW2A(importDir.GetString()) ))
+				{
+					parseOK = false;
+					dprint(_T("Import error: %s\n"), m_umd.GetErrStr());
+				}
+				else
+				{
+					dprint(_T("Import ok.\n"));
+				}
+			}
 		}
 	}
 	else
@@ -227,7 +263,7 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 		}
 		if (file.IsEmpty())
 		{
-			errInfo += _T("Missing required argument: --file.\n");
+			errInfo += _T("Missing required argument: --file or --list.\n");
 		}
 		dprint(_T("%s\n"), errInfo.c_str());
 

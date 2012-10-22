@@ -46,5 +46,9 @@ const WCHAR*const g_CWQSG_UMDDlg_String[] = {
 	L"向上",
 	L"文件名",
 	L"LBA",
-	L"大小",
+	L"大小",//25
+	L"导出文件表",
+	L"文件无法写入",
+	L"文件表已导出",
+	L"文件表导出失败"
 };
