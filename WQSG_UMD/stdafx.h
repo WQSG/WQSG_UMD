@@ -52,9 +52,9 @@
 
 
 
-
-
-
+#ifdef USE_TCMALLOC
+#include <tcmalloc.h>
+#endif
 
 
 

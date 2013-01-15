@@ -171,10 +171,10 @@ IDB_UPARROW             BITMAP                  "Control\\uparrow.bmp"
 STRINGTABLE
 BEGIN
     IDS_APP_NAME            "WQSG_UMD"
-    IDS_APP_VER             "1.0.2012.10220"
+    IDS_APP_VER             "1.0.2013.01150"
     IDS_APP_AUTHOR          "WQSG"
     IDS_APP_AUTHOR2         "恶梦的死神"
-    IDS_APP_SVN             "R53"
+    IDS_APP_SVN             "R54"
 END
 
 #endif    // 中文(简体，中国) resources

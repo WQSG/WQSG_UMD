@@ -31,6 +31,7 @@ static const wchar_t * logfilename = _T("wqsg_umd_log.txt");
 static FILE * logfile;
 static CStringW file;
 static CStringW list;
+static CStringW stime;
 static CStringW iso;
 static CStringW importDir;
 
@@ -150,7 +151,7 @@ void PrintHelp()
 	dprint(_T("WQSG_UMD.exe <--iso=a.iso> <--file=file|dir> <--list=filelist> [--importdir=pspdir] [--quiet] [--log]\n"));
 	dprint(_T("example:\n"));
 	dprint(_T("    WQSG_UMD.exe --iso=c:\\umd0001.iso --file=.\\EBOOT.BIN --importdir=PSP_GAME/SYSDIR --log\n"));
-	dprint(_T("    WQSG_UMD.exe --iso=umd0002.iso --file=.\\PSP_GAME --log --quiet\n"));
+	dprint(_T("    WQSG_UMD.exe --iso=umd0002.iso --file=.\\PSP_GAME --time=2013/1/1,18:30:00 --log --quiet\n"));
 	dprint(_T("    WQSG_UMD.exe --iso=umd0003.iso --list=.\\filelist.txt \n"));
 
 	CloseConsole();
@@ -195,6 +196,10 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 		else if (!StrCmpNI(szArglist[i], _T("--list="), STRLEN("--list=")))
 		{
 			list.Format(_T("%s"),szArglist[i] + STRLEN("--list="));
+		}
+		else if (!StrCmpNI(szArglist[i], _T("--time="), STRLEN("--time=")))
+		{
+			stime.Format(_T("%s"),szArglist[i] + STRLEN("--time="));
 		}
 		else
 		{
@@ -242,6 +247,12 @@ bool ParseCommandParam(const LPWSTR* const szArglist, int nArgs)
 			}
 			if (!file.IsEmpty())
 			{
+				int iYear(0),iMonth(0),iDay(0),iHours(0),iMinutes(0),iSeconds(0);
+				if (!stime.IsEmpty()&&swscanf(stime.GetString(),L"%i/%i/%i,%i:%i:%i",&iYear,&iMonth,&iDay,&iHours,&iMinutes,&iSeconds)==6)
+				{
+					m_umd.SetImportTime(iYear,iMonth,iDay,iHours,iMinutes,iSeconds);
+					dprint(_T("Import time set to: %s\n"),stime);
+				}
 				if (!m_umd.EasyImport( bFileBreak , file, importDir.IsEmpty() ? "" : CW2A(importDir.GetString()) ))
 				{
 					parseOK = false;
