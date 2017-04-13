@@ -1,0 +1,121 @@
+# English
+
+# =========== Iso Base =====================================================================
+
+ 1=Unknown 2352 mode
+ 2=Creation of the LBA allocation table failed
+ 3=Setting LBA Retention Zone failed
+ 4=The allocation of root directory LBA memory failed
+ 5=CD001 logo verification failed
+ 6=Unsupported volume description %d.%d
+ 7=Logical block size is different
+ 8=The logical block size is not 2048,(%d)
+ 9=The root directory is the wrong size
+10=The total number of LBA sizes is different
+11=LBAPathTableSize has Different sizes
+12=V6 size is different
+13=Root verification failed
+14=Unsupported child ISO system (ISO9660)
+15=Unsupported child ISO system (JOLIET)
+16=Unsupported child ISO system (Unknown)
+17=Parameter error
+18=Parameter error nLbaIndex(%d) >= nLbaCount(%d)
+19=Parameter error a_ParentDirEnt.size_le = %08X, nLbaOffset = %d, (2048-DEF_FN_make_DirLen(0)) = %d
+20=Read data error
+21=Wrong directory entry, file name length error
+22=Wrong directory entry, directory entry validation error
+23=Parameter error, wrong DirEnt
+24=No DirEnt(1)
+25=No DirEnt(2)
+26=Apply for LBA failure
+27=Can not find empty file name
+28=Did not find the file
+29=The directory name is longer than 250
+30=The actual length of the directory name is not equal to the predetermined length
+31=Insufficient file length
+32=Read data error
+33=Output data error
+34=The predetermined length is over 250
+35=Can not write catalog
+36=Failed to create directory, file with the same name already exists
+37=The length of the entry does not match the expected length
+38=Release LBA failed
+39=ISO space is insufficient, try to expand ISO failure
+40=Release LBA failed, it is impossible
+41=Apply for LBA failure, it is impossible, how could this be
+42=The current LBA block is not enough to accommodate the write data, you can write offset 0, expand the file and then write offset
+43=The add file can only start with offset 0
+44=Directory space is insufficient",
+45=Write file failed
+46=Read file failed
+47=The file structure version is not 1
+48=This ISO is not UMD",
+49=The file structure version is not 2 or 1
+50=Read ISO information failed
+
+# ========== Iso App ======================================================================
+
+10001=Get header data error
+10002=Write patch file header failed
+10003=Two ISOs are different games
+10004=ISO type is different
+10005=ISO is not open yet?
+10006=The original ISO has not opened it yet
+10007=Write patch failed\r\n
+10008=Initialize temporary file error
+10009=Read patch file error
+10010=File (%hs/%hs) crc32 check failed \r\nCurrent:%08X\r\nRaw:%08X"
+10011=Failed to read root directory
+10012=Patch file parameter is incorrect (m_nFileCount)
+10013=Patch file validation error (m_uCrc32)
+10014=Patch file parameter is incorrect (m_uSize)
+10015=This patch does not apply to this ISO
+10016=The file size is incorrect (nFileSize < head.m_nSize)
+10017=File header check error (m_nSize)
+10018=File header check error (m_uCrc32)
+10019=Version wrong or unsupported version
+10020=No\"%hs\"File
+10021=Reading patch information failed
+10022=%hs\r\nNo files found in ISO
+10023=%ls\r\nFailed to open the file
+10024=%hs\r\nWrong ISO path
+10025=%hs\r\nCan not write ISO catalog
+10026=%ls\r\nFailed to create directory
+10027=%ls\r\nCan not find input file
+10028=%ls\r\nFail to get the file name
+10029=%ls\r\nThe file size is incorrect
+10030=%ls\r\nError writing a file to ISO
+10031=%ls\r\nExport file failed
+10032=%hs\r\nThe file name can only be alphabetic, numeric, dotted or underlined
+10033=%hs\r\nFailed to create ISO directory
+10034=%hs\r\nDirectory names can only be alphabetic, numeric, dotted or underlined
+10035=%ls\r\nFiled to open the ISO
+10036=Update patch file header failed
+
+# ========== Shell App ======================================================================
+
+20001=Export file
+20002=Add a folder
+20003=Add files
+20004=Replace file
+20005=Import file to offset
+20006=Open ISO
+20007=Apply Patch
+20008=Create Patch
+20009=Expand ISO
+20010=About
+20011=[Write Mode]
+20012=[Read-only Mode]
+20013=Folders: %d. Files: %d.\r\nTotal number of LBA: %d. Total number of free LBA: %d.\r\nNumber of Free LBA blocks is: %d. Largest free LBA block is: %d.
+20014=No Write Permission
+20015=Project SVN
+20016=Library SVN
+20017=Enter the number of LBAs to be expanded\r\nThe size of each LBA is %d byte
+20018=Expansion Success
+20019=Expansion Failed
+20020=Output path...
+20021=Choose to replace the file...
+20022=Up
+20023=File Name
+20024=LBA
+20025=Size
